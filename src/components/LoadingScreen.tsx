@@ -21,6 +21,7 @@ export default function LoadingScreen() {
           src="/images/cheesy_logo.webp"
           alt="Cheesy Logo"
           className="w-36 h-36 rounded-2xl object-contain"
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.webp'; }}
         />
         <div className="flex gap-1">
           {[0, 1, 2].map(i => (

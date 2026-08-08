@@ -92,7 +92,7 @@ export default function Order() {
               {cartItems.map(({ item, quantity }) => (
                 <div key={item.id} className="flex gap-4 p-4 rounded-2xl bg-white dark:bg-[#2C2C2C] shadow-sm">
                   {item.images.length > 0 ? (
-                    <img src={item.images[0]} alt={item.nameFr} className="w-20 h-20 rounded-xl object-contain p-1 flex-shrink-0" />
+                    <img src={item.images[0]} alt={item.nameFr} className="w-20 h-20 rounded-xl object-contain p-1 flex-shrink-0" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.webp'; }} />
                   ) : (
                     <div className="w-20 h-20 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-[#333] flex-shrink-0">
                       <ImageIcon className="w-7 h-7 text-gray-300 dark:text-gray-600" />
