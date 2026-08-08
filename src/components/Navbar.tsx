@@ -54,7 +54,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
-            <img src="/images/cheesy_logo.webp" alt="Cheesy" className="w-10 h-10 rounded-xl object-contain" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.webp'; }} />
+            <img src="/images/cheesy_logo.webp" alt="Cheesy" className="w-10 h-10 rounded-xl object-contain" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} />
             <span className="text-xl font-black tracking-tight text-[#F6B21A]">
               Cheesy
               <span className="nav-logo-black"> Medenine</span>
@@ -161,7 +161,7 @@ export default function Navbar() {
         >
           <div className="flex flex-col h-full pt-24 px-6 pb-8">
             <div className="flex flex-col items-center gap-3 mb-8">
-              <img src="/images/cheesy_logo.webp" alt="Cheesy" className="w-20 h-20 rounded-2xl object-contain" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.webp'; }} />
+              <img src="/images/cheesy_logo.webp" alt="Cheesy" className="w-20 h-20 rounded-2xl object-contain" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} />
               <span className="text-2xl font-black text-[#2C2C2C] dark:text-white">Cheesy <span className="text-black dark:text-white">Medenine</span></span>
             </div>
             <nav className="flex flex-col gap-2">

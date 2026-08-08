@@ -22,7 +22,7 @@ export default function Home() {
       {/* Hero */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/images/cheesy_hero.webp" alt="Cheesy Medenine" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.webp'; }} />
+          <img src="/images/cheesy_hero.png" alt="Cheesy Medenine" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} />
           <div className="absolute inset-0 bg-gradient-to-b from-[#2C2C2C]/70 via-[#2C2C2C]/50 to-[#2C2C2C]/80" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#F6B21A]/20 via-transparent to-[#FF9F1C]/20" />
         </div>
@@ -101,7 +101,7 @@ export default function Home() {
                 <div className="relative h-44 sm:h-48 overflow-hidden bg-gray-50 dark:bg-[#333]">
                   {item.images.length > 0 ? (
                     <div className="w-full h-full flex items-center justify-center p-2.5">
-                      <img src={item.images[0]} alt={item.nameFr} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.webp'; }} />
+                      <img src={item.images[0]} alt={item.nameFr} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} />
                     </div>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-[#333]">

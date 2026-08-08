@@ -22,7 +22,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <img src="/images/cheesy_logo.webp" alt="Cheesy" className="w-12 h-12 rounded-xl object-contain" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.webp'; }} />
+              <img src="/images/cheesy_logo.webp" alt="Cheesy" className="w-12 h-12 rounded-xl object-contain" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} />
               <div>
                 <p className="text-xl font-black">Cheesy</p>
                 <p className="text-sm text-[#F6B21A] font-bold">Medenine</p>

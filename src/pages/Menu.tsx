@@ -101,7 +101,7 @@ function Carousel({ images, alt, className, arrowSize = 18, showExpand = false, 
           src={images[idx]}
           alt={alt}
           className="w-full h-full object-contain"
-          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.webp'; }}
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }}
         />
       </div>
 
@@ -220,7 +220,7 @@ function DetailModal({ item, onClose, onAdd }: { item: MenuItem; onClose: () => 
                   src={images[idx]}
                   alt={item.nameFr}
                   className="w-full h-full object-contain"
-                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.webp'; }}
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }}
                 />
               </div>
               {hasMultiple && (
@@ -263,7 +263,7 @@ function DetailModal({ item, onClose, onAdd }: { item: MenuItem; onClose: () => 
                   onClick={() => setIdx(i)}
                   className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === idx ? 'border-[#F6B21A] scale-105' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
-                  <img src={g} alt="" className="w-full h-full object-contain p-0.5" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.webp'; }} />
+                  <img src={g} alt="" className="w-full h-full object-contain p-0.5" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} />
                 </button>
               ))}
             </div>
