@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Truck, QrCode, ChefHat, Clock, Star, Utensils, Phone, ImageIcon } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { ArrowRight, Truck, ChefHat, Clock, Star, Utensils, Phone, ImageIcon } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 import { menuItems, menuCategories } from '@/data/menuData';
 
@@ -132,56 +131,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* QR Code Section */}
-      <section className="py-20 bg-gradient-to-br from-[#F6EFE3] to-[#FAF9F6] dark:from-[#1a1a1a] dark:to-[#2C2C2C]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className={isRTL ? 'order-2' : ''}>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F6B21A]/10 mb-5">
-                <QrCode size={18} className="text-[#F6B21A]" />
-                <span className="text-[#F6B21A] font-bold text-sm">Scan & Go</span>
-              </div>
-              <h2 className="text-4xl font-black text-[#2C2C2C] dark:text-white mb-4">{t.qrTitle}</h2>
-              <p className="text-gray-600 dark:text-gray-400 text-lg mb-8">{t.qrSub}</p>
-              <div className="flex flex-wrap gap-4">
-                <div className="flex items-center gap-2 text-[#2C2C2C] dark:text-white">
-                  <Utensils size={20} className="text-[#F6B21A]" />
-                  <span className="font-semibold">{t.menu}</span>
-                </div>
-                <div className="flex items-center gap-2 text-[#2C2C2C] dark:text-white">
-                  <Phone size={20} className="text-[#F6B21A]" />
-                  <span className="font-semibold">WhatsApp</span>
-                </div>
-              </div>
-            </div>
 
-            <div className={`flex justify-center ${isRTL ? 'order-1' : ''}`}>
-              <div className="relative">
-                <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#F6B21A] to-[#FF9F1C] opacity-20 blur-2xl" />
-                <div className="relative p-8 rounded-3xl bg-white dark:bg-[#1a1a1a] shadow-2xl">
-                  <div className="w-56 h-56 bg-white rounded-2xl p-4 border-2 border-[#F6B21A]/20 flex items-center justify-center">
-                    <QRCodeSVG
-                      value={siteUrl}
-                      size={200}
-                      fgColor="#2C2C2C"
-                      bgColor="#FFFFFF"
-                      level="H"
-                      imageSettings={{
-                        src: "/images/cheesy_logo.webp",
-                        height: 36,
-                        width: 36,
-                        excavate: true,
-                      }}
-                    />
-                  </div>
-                  <p className="text-center mt-4 font-black text-[#2C2C2C] dark:text-white">Cheesy Medenine</p>
-                  <p className="text-center text-sm text-gray-500">Scan the QR Code to visit our official website.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Categories Preview */}
       <section className="py-20 bg-white dark:bg-[#2C2C2C]">
