@@ -14,7 +14,7 @@ export default function Order() {
   const [orderNumber, setOrderNumber] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // دالة توليد رقم الطلب اليومي المتسلسل (1، 2، 3...) ويعود لـ 1 مع كل يوم جديد
+  // دالة توليد رقم الطلب اليومي المتسلسل
   const generateDailyOrderNumber = (): string => {
     const today = new Date().toISOString().split('T')[0];
     const lastDate = localStorage.getItem('lastOrderDate');
@@ -175,50 +175,59 @@ export default function Order() {
 
       {/* Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-              <div className="flex items-center gap-3">
-                <CheckCircle size={24} className="text-[#25D366]" />
-                <h3 className="text-xl font-black text-[#2C2C2C] dark:text-white">{isRTL ? 'تأكيد الطلب' : 'Confirmer la Commande'}</h3>
+        <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm flex items-center justify-center p-3">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-2xl max-w-md w-full max-h-[92vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <CheckCircle size={22} className="text-[#25D366]" />
+                <h3 className="text-lg font-black text-[#2C2C2C] dark:text-white">{isRTL ? 'تأكيد الطلب' : 'Confirmer la Commande'}</h3>
               </div>
-              <button onClick={() => setShowConfirm(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <X size={20} className="text-[#2C2C2C] dark:text-white" />
+              <button onClick={() => setShowConfirm(false)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <X size={18} className="text-[#2C2C2C] dark:text-white" />
               </button>
             </div>
-            <div className="px-6 py-5 space-y-4">
-              <div className="text-center py-1">
-                <p className="text-sm text-gray-500 dark:text-gray-400">{isRTL ? 'رقم الطلب' : 'Numéro de commande'}</p>
-                <p className="text-xl font-bold text-[#F6B21A] mt-0.5">{orderNumber}</p>
+
+            {/* Scrollable Body */}
+            <div className="p-4 space-y-3 overflow-y-auto flex-1">
+              <div className="text-center">
+                <p className="text-xs text-gray-500 dark:text-gray-400">{isRTL ? 'رقم الطلب' : 'Numéro de commande'}</p>
+                <p className="text-2xl font-black text-[#F6B21A]">{orderNumber}</p>
               </div>
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-[#F6B21A]/10 text-sm text-[#2C2C2C] dark:text-gray-300">
-                <Info size={16} className="text-[#F6B21A] flex-shrink-0 mt-0.5" />
-                <p>{isRTL ? `رقم طلبك هو ${orderNumber}. يرجى الاحتفاظ بهذا الرقم. يمكنك استخدامه للاستعلام عن طلبك لدى المطعم.` : `Votre numéro de commande est ${orderNumber}. Gardez ce numéro. Vous pouvez l'utiliser plus tard pour demander au restaurant l'état de votre commande.`}</p>
+
+              <div className="flex items-start gap-2 p-2.5 rounded-xl bg-[#F6B21A]/10 text-xs text-[#2C2C2C] dark:text-gray-300">
+                <Info size={15} className="text-[#F6B21A] flex-shrink-0 mt-0.5" />
+                <p>{isRTL ? `رقم طلبك هو ${orderNumber}. احتفظ به للاستعلام عن الطلب.` : `Votre numéro de commande est ${orderNumber}. Gardez ce numéro pour le restaurant.`}</p>
               </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex gap-2"><span className="font-bold text-gray-500 dark:text-gray-400 min-w-[80px]">{isRTL ? 'الاسم' : 'Nom'}:</span><span className="font-semibold text-[#2C2C2C] dark:text-white">{name}</span></div>
-                <div className="flex gap-2"><span className="font-bold text-gray-500 dark:text-gray-400 min-w-[80px]">{isRTL ? 'الهاتف' : 'Téléphone'}:</span><span className="font-semibold text-[#2C2C2C] dark:text-white" dir="ltr">{phone}</span></div>
-                <div className="flex gap-2"><span className="font-bold text-gray-500 dark:text-gray-400 min-w-[80px]">{isRTL ? 'العنوان' : 'Adresse'}:</span><span className="font-semibold text-[#2C2C2C] dark:text-white">{address}</span></div>
+
+              <div className="space-y-1.5 text-xs">
+                <div className="flex gap-2"><span className="font-bold text-gray-500 dark:text-gray-400 min-w-[70px]">{isRTL ? 'الاسم' : 'Nom'}:</span><span className="font-semibold text-[#2C2C2C] dark:text-white">{name}</span></div>
+                <div className="flex gap-2"><span className="font-bold text-gray-500 dark:text-gray-400 min-w-[70px]">{isRTL ? 'الهاتف' : 'Téléphone'}:</span><span className="font-semibold text-[#2C2C2C] dark:text-white" dir="ltr">{phone}</span></div>
+                <div className="flex gap-2"><span className="font-bold text-gray-500 dark:text-gray-400 min-w-[70px]">{isRTL ? 'العنوان' : 'Adresse'}:</span><span className="font-semibold text-[#2C2C2C] dark:text-white">{address}</span></div>
               </div>
-              <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
-                <p className="font-black text-[#2C2C2C] dark:text-white text-sm mb-2">{isRTL ? 'الطلبات' : 'Articles'}:</p>
-                <div className="space-y-1.5">
+
+              <div className="border-t border-gray-100 dark:border-gray-800 pt-2.5">
+                <p className="font-black text-[#2C2C2C] dark:text-white text-xs mb-1.5">{isRTL ? 'الطلبات' : 'Articles'}:</p>
+                <div className="space-y-1 max-h-24 overflow-y-auto">
                   {cartItems.map(({ item, quantity }) => (
-                    <div key={item.id} className="flex justify-between text-sm">
+                    <div key={item.id} className="flex justify-between text-xs">
                       <span className="text-[#2C2C2C] dark:text-white">• {item.nameFr} ×{quantity}</span>
                       <span className="font-bold text-[#2C2C2C] dark:text-white">{(item.price * quantity).toFixed(1)} {t.dt}</span>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="flex justify-between items-center border-t border-gray-100 dark:border-gray-800 pt-4">
-                <span className="font-black text-[#2C2C2C] dark:text-white">{t.total}</span>
-                <span className="text-2xl font-black text-[#F6B21A]">{totalPrice.toFixed(1)} {t.dt}</span>
+
+              <div className="flex justify-between items-center border-t border-gray-100 dark:border-gray-800 pt-2.5">
+                <span className="font-black text-sm text-[#2C2C2C] dark:text-white">{t.total}</span>
+                <span className="text-xl font-black text-[#F6B21A]">{totalPrice.toFixed(1)} {t.dt}</span>
               </div>
             </div>
-            <div className="px-6 py-5 border-t border-gray-100 dark:border-gray-800">
-              <button onClick={handleConfirmOrder} className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[#25D366] hover:bg-[#1ebe57] text-white font-black transition-all hover:scale-[1.02]" >
-                <Send size={18} /> {isRTL ? 'تأكيد وإرسال' : 'Confirmer & Envoyer'}
+
+            {/* Fixed Footer with Button */}
+            <div className="p-3 bg-white dark:bg-[#1a1a1a] border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+              <button onClick={handleConfirmOrder} className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#25D366] hover:bg-[#1ebe57] text-white font-black text-sm transition-all hover:scale-[1.01]" >
+                <Send size={16} /> {isRTL ? 'تأكيد وإرسال عبر الواتساب' : 'Confirmer & Envoyer via WhatsApp'}
               </button>
             </div>
           </div>
