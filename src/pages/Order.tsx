@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Trash2, Plus, Minus, ShoppingBag, Send, MapPin, User, Phone, CheckCircle, X, FileText, Info, ImageIcon } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useLang } from '@/contexts/LanguageContext';
+import { supabase } from '@/lib/supabase';
 
 export default function Order() {
   const { t, isRTL } = useLang();
@@ -14,21 +15,17 @@ export default function Order() {
   const [orderNumber, setOrderNumber] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // دالة توليد رقم الطلب اليومي المتسلسل
-  const generateDailyOrderNumber = (): string => {
-    const today = new Date().toISOString().split('T')[0];
-    const lastDate = localStorage.getItem('lastOrderDate');
-    let currentCount = parseInt(localStorage.getItem('dailyOrderCounter') || '0', 10);
-
-    if (lastDate !== today) {
-      currentCount = 0;
-      localStorage.setItem('lastOrderDate', today);
+  // دالة جلب رقم الطلب اليومي الموحد لجميع الزوار من Supabase
+  const generateDailyOrderNumber = async (): Promise<string> => {
+    try {
+      const { data, error } = await supabase.rpc('get_daily_order_number');
+      if (error) throw error;
+      return `#${data}`;
+    } catch {
+      // احتياطي في حال وجود مشكلة اتصال
+      const fallback = Math.floor(100 + Math.random() * 900);
+      return `#${fallback}`;
     }
-
-    const nextCount = currentCount + 1;
-    localStorage.setItem('dailyOrderCounter', nextCount.toString());
-
-    return `#${nextCount}`;
   };
 
   const buildWhatsAppMessage = (orderNum: string) => {
@@ -54,10 +51,10 @@ export default function Order() {
     return msg;
   };
 
-  const handleSendOrder = () => {
+  const handleSendOrder = async () => {
     if (cartItems.length === 0 || !name || !phone || !address) return;
     setIsGenerating(true);
-    const num = generateDailyOrderNumber();
+    const num = await generateDailyOrderNumber();
     setOrderNumber(num);
     setIsGenerating(false);
     setShowConfirm(true);
@@ -162,7 +159,7 @@ export default function Order() {
                   <p className="text-xs text-gray-500 dark:text-gray-400">{isRTL ? 'ادفع نقداً عند الباب' : 'Payez en espèces à la porte'}</p>
                 </div>
               </div>
-              <button onClick={handleSendOrder} disabled={!isValid} className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[#25D366] hover:bg-[#1ebe57] text-white font-black transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100" >
+              <button onClick={handleSendOrder} disabled={!isValid || isGenerating} className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[#25D366] hover:bg-[#1ebe57] text-white font-black transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100" >
                 <Send size={18} /> {isGenerating ? (isRTL ? 'جاري التوليد...' : 'Génération...') : t.sendOrder}
               </button>
               {!isValid && (
