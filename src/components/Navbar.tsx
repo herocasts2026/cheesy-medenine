@@ -28,8 +28,7 @@ export default function Navbar() {
   const navLinks = [
     { label: t.home, href: '/' },
     { label: t.menu, href: '/menu' },
-    { label: t.orderOnline, href: '/order' },
-    { label: t.delivery, href: '/delivery' },
+    { label: t.orderOnline, href: '/order' } 
     { label: t.about, href: '/about' },
     { label: t.contact, href: '/contact' },
   ];
