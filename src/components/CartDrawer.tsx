@@ -17,7 +17,9 @@ export default function CartDrawer() {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isCartOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+        className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+          isCartOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+        }`}
         onClick={() => setIsCartOpen(false)}
       />
 
@@ -51,8 +53,16 @@ export default function CartDrawer() {
           ) : (
             cartItems.map(({ item, quantity }) => (
               <div key={item.id} className="flex gap-4 p-4 rounded-2xl bg-[#FAF9F6] dark:bg-[#2C2C2C]">
-                {item.images.length > 0 ? (
-                  <img src={item.images[0]} alt={item.nameFr} className="w-16 h-16 rounded-xl object-contain p-1 flex-shrink-0" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} />
+                {item.images && item.images.length > 0 ? (
+                  <img
+                    src={item.images[0]}
+                    alt={item.nameFr}
+                    className="w-16 h-16 rounded-xl object-contain p-1 flex-shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = '/images/fallback-food.png';
+                    }}
+                  />
                 ) : (
                   <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-[#333] flex-shrink-0">
                     <ImageIcon className="w-6 h-6 text-gray-300 dark:text-gray-600" />
