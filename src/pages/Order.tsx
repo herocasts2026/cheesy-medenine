@@ -11,7 +11,6 @@ import {
   CheckCircle,
   X,
   FileText,
-  Info,
   ImageIcon,
   Loader2,
 } from 'lucide-react';
@@ -32,12 +31,44 @@ export default function Order() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [notes, setNotes] = useState('');
+  const [generalNotes, setGeneralNotes] = useState('');
+
+  // مصفوفة لتخزين استبعادات كل عنصر في السلة بفرض معرّف العنصر index أو id
+  const [itemNotesMap, setItemNotesMap] = useState<{ [key: string]: string }>({});
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // قائمة المكونات المنطقية القابلة للاستبعاد
+  const quickDislikes = [
+    'Sans Harissa',
+    'Sans Mayonnaise',
+    'Sans Oignon',
+    'Sans Salade',
+    'Sans Sauce Fromagère',
+    'Sans Sauce Algérienne',
+    'Sans Oeuf',
+  ];
+
+  // دالة لتغيير استبعادات وجبة محددة فقط
+  const handleToggleIngredientForItem = (itemId: string, ingredient: string) => {
+    setItemNotesMap((prev) => {
+      const currentNotes = prev[itemId] || '';
+      let updated = '';
+
+      if (currentNotes.includes(ingredient)) {
+        updated = currentNotes
+          .replace(new RegExp(`,?\\s*${ingredient}`, 'g'), '')
+          .trim();
+      } else {
+        updated = currentNotes ? `${currentNotes}, ${ingredient}` : ingredient;
+      }
+
+      return { ...prev, [itemId]: updated };
+    });
+  };
 
   /* جلب رقم الطلب التسلسلي من Supabase */
   const generateDailyOrderNumber = async (): Promise<string | null> => {
@@ -48,16 +79,13 @@ export default function Order() {
         console.error('Supabase RPC Error:', error);
         return null;
       }
-
       if (data === null || data === undefined) {
         return null;
       }
-
       const number = Number(data);
       if (!Number.isInteger(number) || number < 1) {
         return null;
       }
-
       return `#${number}`;
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -65,7 +93,7 @@ export default function Order() {
     }
   };
 
-  /* صياغة رسالة الواتساب */
+  /* صياغة رسالة الواتساب وتفصيل كل وجبة بملاحظاتها */
   const buildWhatsAppMessage = (orderNum: string) => {
     const now = new Date();
     const date = `${String(now.getDate()).padStart(2, '0')}/${String(
@@ -81,19 +109,26 @@ export default function Order() {
     msg += `📞 Phone:\n${phone}\n\n`;
     msg += `📍 Address:\n${address}\n\n`;
     msg += `🛒 Order:\n`;
+
     cartItems.forEach(({ item, quantity }) => {
+      const itemCustomNotes = itemNotesMap[item.id];
       msg += `• ${item.nameFr} ×${quantity}\n`;
+      if (itemCustomNotes && itemCustomNotes.trim()) {
+        msg += `   └ 📝 ${itemCustomNotes}\n`;
+      }
     });
+
     msg += `\n💰 Total:\n${totalPrice.toFixed(1)} ${t.dt}\n`;
-    if (notes.trim()) {
-      msg += `\n📝 Notes:\n${notes}\n`;
+
+    if (generalNotes.trim()) {
+      msg += `\n📌 General Notes:\n${generalNotes}\n`;
     }
+
     msg += `\n🕒 Time:\n${time}\n`;
     msg += `\n📅 Date:\n${date}\n`;
     return msg;
   };
 
-  /* زر الإرسال الأول: يجلب الرقم أولاً ثم يفتح النافذة */
   const handleSendOrder = async () => {
     if (
       cartItems.length === 0 ||
@@ -106,9 +141,7 @@ export default function Order() {
 
     setIsGenerating(true);
     setErrorMessage('');
-
     const generatedNumber = await generateDailyOrderNumber();
-
     if (!generatedNumber) {
       setIsGenerating(false);
       setErrorMessage(
@@ -118,13 +151,11 @@ export default function Order() {
       );
       return;
     }
-
     setOrderNumber(generatedNumber);
     setIsGenerating(false);
     setShowConfirm(true);
   };
 
-  /* التوجيه النهائي للواتساب */
   const handleConfirmOrder = () => {
     if (!orderNumber) return;
 
@@ -143,30 +174,22 @@ export default function Order() {
     address.trim() !== '';
 
   return (
-    <div className="py-20 bg-[#FAF9F6] dark:bg-[#1a1a1a]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <p className="text-[#F6B21A] font-black uppercase tracking-wider text-sm mb-2">
-            {t.orderOnline}
-          </p>
-          <h1 className="text-4xl font-black text-[#2C2C2C] dark:text-white">
-            {t.yourOrder}
-          </h1>
-        </div>
+    <div className="min-h-screen bg-[#FAF9F6] dark:bg-[#121212] py-8 px-4 sm:px-6 lg:px-8 transition-colors">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <h1 className="text-3xl font-black text-[#2C2C2C] dark:text-white text-center">
+          {t.yourOrder}
+        </h1>
 
         {cartItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-            <ShoppingBag
-              size={64}
-              className="text-gray-200 dark:text-gray-700"
-            />
+            <ShoppingBag size={64} className="text-gray-200 dark:text-gray-700" />
             <p className="text-gray-400 dark:text-gray-500 font-medium text-lg">
               {t.cartEmpty}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Cart Items */}
+            {/* Cart Items with Individual Customization */}
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-xl font-black text-[#2C2C2C] dark:text-white">
@@ -179,58 +202,96 @@ export default function Order() {
                   Clear
                 </button>
               </div>
-              {cartItems.map(({ item, quantity }) => (
-                <div
-                  key={item.id}
-                  className="flex gap-4 p-4 rounded-2xl bg-white dark:bg-[#2C2C2C] shadow-sm"
-                >
-                  {item.images && item.images.length > 0 ? (
-                    <img
-                      src={item.images[0]}
-                      alt={item.nameFr}
-                      className="w-20 h-20 rounded-xl object-contain p-1 flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-[#333] flex-shrink-0">
-                      <ImageIcon className="w-7 h-7 text-gray-300 dark:text-gray-600" />
+
+              {cartItems.map(({ item, quantity }) => {
+                const currentItemNotes = itemNotesMap[item.id] || '';
+
+                return (
+                  <div
+                    key={item.id}
+                    className="p-4 rounded-2xl bg-white dark:bg-[#2C2C2C] shadow-sm space-y-3"
+                  >
+                    <div className="flex gap-4">
+                      {item.images && item.images.length > 0 ? (
+                        <img
+                          src={item.images[0]}
+                          alt={item.nameFr}
+                          className="w-20 h-20 rounded-xl object-contain p-1 flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-[#333] flex-shrink-0">
+                          <ImageIcon className="w-7 h-7 text-gray-300 dark:text-gray-600" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-[#2C2C2C] dark:text-white text-sm leading-snug">
+                          {item.nameFr}
+                        </p>
+                        <p className="text-[#F6B21A] font-black mt-1">
+                          {item.price} {t.dt}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <button
+                            onClick={() => updateQuantity(item.id, -1)}
+                            className="w-7 h-7 rounded-full bg-[#FAF9F6] dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 flex items-center justify-center"
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <span className="font-black text-sm w-5 text-center">
+                            {quantity}
+                          </span>
+                          <button
+                            onClick={() => updateQuantity(item.id, 1)}
+                            className="w-7 h-7 rounded-full bg-[#FAF9F6] dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 flex items-center justify-center"
+                          >
+                            <Plus size={12} />
+                          </button>
+                          <span className="ml-auto font-black text-[#2C2C2C] dark:text-white">
+                            {(item.price * quantity).toFixed(1)} {t.dt}
+                          </span>
+                          <button
+                            onClick={() => removeFromCart(item.id)}
+                            className="p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-red-400"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[#2C2C2C] dark:text-white text-sm leading-snug">
-                      {item.nameFr}
-                    </p>
-                    <p className="text-[#F6B21A] font-black mt-1">
-                      {item.price} {t.dt}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <button
-                        onClick={() => updateQuantity(item.id, -1)}
-                        className="w-7 h-7 rounded-full bg-[#FAF9F6] dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 flex items-center justify-center"
-                      >
-                        <Minus size={12} />
-                      </button>
-                      <span className="font-black text-sm w-5 text-center">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQuantity(item.id, 1)}
-                        className="w-7 h-7 rounded-full bg-[#FAF9F6] dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 flex items-center justify-center"
-                      >
-                        <Plus size={12} />
-                      </button>
-                      <span className="ml-auto font-black text-[#2C2C2C] dark:text-white">
-                        {(item.price * quantity).toFixed(1)} {t.dt}
-                      </span>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-red-400"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+
+                    {/* خيارات الاستبعاد الخاصة بـ هذه الوجبة المحددة فقط */}
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                      <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1.5">
+                        {isRTL
+                          ? `خيارات خاصة بـ (${item.nameFr}):`
+                          : `Options pour (${item.nameFr}):`}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {quickDislikes.map((ingredient) => {
+                          const isSelected = currentItemNotes.includes(ingredient);
+                          return (
+                            <button
+                              key={ingredient}
+                              type="button"
+                              onClick={() =>
+                                handleToggleIngredientForItem(item.id, ingredient)
+                              }
+                              className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                                isSelected
+                                  ? 'bg-[#F6B21A] text-[#2C2C2C] shadow-sm'
+                                  : 'bg-[#FAF9F6] dark:bg-[#1a1a1a] text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+                              }`}
+                            >
+                              {ingredient} {isSelected ? '✓' : '+'}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
               <div className="flex items-center justify-between p-6 rounded-2xl bg-white dark:bg-[#2C2C2C] shadow-sm mt-4">
                 <span className="font-black text-lg text-[#2C2C2C] dark:text-white">
                   {t.total}
@@ -249,7 +310,8 @@ export default function Order() {
               <div className="p-6 rounded-2xl bg-white dark:bg-[#2C2C2C] shadow-sm space-y-5">
                 <div>
                   <label className="flex items-center gap-2 text-sm font-bold text-[#2C2C2C] dark:text-white mb-2">
-                    <User size={16} className="text-[#F6B21A]" /> {t.yourName}
+                    <User size={16} className="text-[#F6B21A]" />
+                    {t.yourName}
                   </label>
                   <input
                     type="text"
@@ -259,9 +321,11 @@ export default function Order() {
                     placeholder={isRTL ? 'اسمك الكامل' : 'Votre nom complet'}
                   />
                 </div>
+
                 <div>
                   <label className="flex items-center gap-2 text-sm font-bold text-[#2C2C2C] dark:text-white mb-2">
-                    <Phone size={16} className="text-[#F6B21A]" /> {t.yourPhone}
+                    <Phone size={16} className="text-[#F6B21A]" />
+                    {t.yourPhone}
                   </label>
                   <input
                     type="tel"
@@ -272,9 +336,10 @@ export default function Order() {
                     dir="ltr"
                   />
                 </div>
+
                 <div>
                   <label className="flex items-center gap-2 text-sm font-bold text-[#2C2C2C] dark:text-white mb-2">
-                    <MapPin size={16} className="text-[#F6B21A]" />{' '}
+                    <MapPin size={16} className="text-[#F6B21A]" />
                     {t.yourAddress}
                   </label>
                   <textarea
@@ -289,21 +354,23 @@ export default function Order() {
                     }
                   />
                 </div>
+
                 <div>
                   <label className="flex items-center gap-2 text-sm font-bold text-[#2C2C2C] dark:text-white mb-2">
-                    <FileText size={16} className="text-[#F6B21A]" />{' '}
-                    {isRTL ? 'ملاحظات' : 'Notes'}
+                    <FileText size={16} className="text-[#F6B21A]" />
+                    {isRTL ? 'ملاحظات عامة على الطلب' : 'Notes générales'}
                   </label>
                   <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
+                    value={generalNotes}
+                    onChange={(e) => setGeneralNotes(e.target.value)}
                     rows={2}
                     className="w-full px-4 py-3 rounded-xl bg-[#FAF9F6] dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 text-[#2C2C2C] dark:text-white focus:border-[#F6B21A] focus:outline-none transition-colors resize-none"
                     placeholder={
-                      isRTL ? 'أي ملاحظات خاصة...' : 'Notes spéciales...'
+                      isRTL ? 'أي ملاحظات إضافية...' : 'Notes supplémentaires...'
                     }
                   />
                 </div>
+
                 {errorMessage && (
                   <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40">
                     <p className="text-sm text-red-600 dark:text-red-400 font-semibold text-center">
@@ -311,6 +378,7 @@ export default function Order() {
                     </p>
                   </div>
                 )}
+
                 <button
                   onClick={handleSendOrder}
                   disabled={!isValid || isGenerating}
@@ -325,7 +393,8 @@ export default function Order() {
                     </>
                   ) : (
                     <>
-                      <Send size={18} /> {t.sendOrder}
+                      <Send size={18} />
+                      {t.sendOrder}
                     </>
                   )}
                 </button>
@@ -352,6 +421,7 @@ export default function Order() {
                   <X size={18} className="text-[#2C2C2C] dark:text-white" />
                 </button>
               </div>
+
               <div className="p-4 space-y-3 overflow-y-auto flex-1">
                 <div className="text-center p-3 rounded-2xl bg-[#F6B21A]/10 border border-[#F6B21A]/30">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -361,6 +431,7 @@ export default function Order() {
                     {orderNumber}
                   </p>
                 </div>
+
                 <div className="space-y-1.5 text-xs">
                   <div className="flex gap-2">
                     <span className="font-bold text-gray-500 dark:text-gray-400 min-w-[70px]">
@@ -390,26 +461,35 @@ export default function Order() {
                     </span>
                   </div>
                 </div>
+
                 <div className="border-t border-gray-100 dark:border-gray-800 pt-2.5">
                   <p className="font-black text-[#2C2C2C] dark:text-white text-xs mb-1.5">
                     {isRTL ? 'الطلبات' : 'Articles'}:
                   </p>
-                  <div className="space-y-1 max-h-24 overflow-y-auto">
-                    {cartItems.map(({ item, quantity }) => (
-                      <div
-                        key={item.id}
-                        className="flex justify-between text-xs"
-                      >
-                        <span className="text-[#2C2C2C] dark:text-white">
-                          • {item.nameFr} ×{quantity}
-                        </span>
-                        <span className="font-bold text-[#2C2C2C] dark:text-white">
-                          {(item.price * quantity).toFixed(1)} {t.dt}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {cartItems.map(({ item, quantity }) => {
+                      const itemCustomNotes = itemNotesMap[item.id];
+                      return (
+                        <div key={item.id} className="text-xs space-y-0.5">
+                          <div className="flex justify-between">
+                            <span className="text-[#2C2C2C] dark:text-white font-medium">
+                              • {item.nameFr} ×{quantity}
+                            </span>
+                            <span className="font-bold text-[#2C2C2C] dark:text-white">
+                              {(item.price * quantity).toFixed(1)} {t.dt}
+                            </span>
+                          </div>
+                          {itemCustomNotes && (
+                            <p className="text-[10px] text-[#F6B21A] pl-3">
+                              └ {itemCustomNotes}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
+
                 <div className="flex justify-between items-center border-t border-gray-100 dark:border-gray-800 pt-2.5">
                   <span className="font-black text-sm text-[#2C2C2C] dark:text-white">
                     {t.total}
@@ -419,12 +499,13 @@ export default function Order() {
                   </span>
                 </div>
               </div>
+
               <div className="p-3 bg-white dark:bg-[#1a1a1a] border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
                 <button
                   onClick={handleConfirmOrder}
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#25D366] hover:bg-[#1ebe57] text-white font-black text-sm transition-all hover:scale-[1.01]"
                 >
-                  <Send size={16} />{' '}
+                  <Send size={16} />
                   {isRTL
                     ? 'تأكيد وإرسال عبر الواتساب'
                     : 'Confirmer & Envoyer via WhatsApp'}
