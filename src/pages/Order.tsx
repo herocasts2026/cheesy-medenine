@@ -33,15 +33,14 @@ export default function Order() {
   const [address, setAddress] = useState('');
   const [generalNotes, setGeneralNotes] = useState('');
 
-  // مصفوفة لتخزين استبعادات كل عنصر في السلة بفرض معرّف العنصر index أو id
-  const [itemNotesMap, setItemNotesMap] = useState<{ [key: string]: string }>({});
+  // خريطة لربط استبعادات كل وحدة على حدة باستخدام المفتاح `${itemIndex}-${unitIndex}`
+  const [itemNotesMap, setItemNotesMap] = useState<Record<string, string>>({});
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // قائمة المكونات المنطقية القابلة للاستبعاد
   const quickDislikes = [
     'Sans Harissa',
     'Sans Mayonnaise',
@@ -52,48 +51,49 @@ export default function Order() {
     'Sans Oeuf',
   ];
 
-  // دالة لتغيير استبعادات وجبة محددة فقط
-  const handleToggleIngredientForItem = (itemId: string, ingredient: string) => {
+  const handleToggleIngredient = (
+    itemIndex: number,
+    unitIndex: number,
+    ingredient: string
+  ) => {
+    const key = `${itemIndex}-${unitIndex}`;
     setItemNotesMap((prev) => {
-      const currentNotes = prev[itemId] || '';
-      let updated = '';
+      const current = prev[key] || '';
 
-      if (currentNotes.includes(ingredient)) {
-        updated = currentNotes
-          .replace(new RegExp(`,?\\s*${ingredient}`, 'g'), '')
-          .trim();
-      } else {
-        updated = currentNotes ? `${currentNotes}, ${ingredient}` : ingredient;
+      if (current.includes(ingredient)) {
+        const updated = current
+          .split(', ')
+          .filter((x) => x !== ingredient)
+          .join(', ');
+
+        const next = { ...prev };
+        if (updated) {
+          next[key] = updated;
+        } else {
+          delete next[key];
+        }
+        return next;
       }
 
-      return { ...prev, [itemId]: updated };
+      return {
+        ...prev,
+        [key]: current ? `${current}, ${ingredient}` : ingredient,
+      };
     });
   };
 
-  /* جلب رقم الطلب التسلسلي من Supabase */
   const generateDailyOrderNumber = async (): Promise<string | null> => {
     try {
       const { data, error } = await supabase.rpc('get_next_order_number');
-
-      if (error) {
-        console.error('Supabase RPC Error:', error);
-        return null;
-      }
-      if (data === null || data === undefined) {
-        return null;
-      }
+      if (error || data === null || data === undefined) return null;
       const number = Number(data);
-      if (!Number.isInteger(number) || number < 1) {
-        return null;
-      }
-      return `#${number}`;
-    } catch (error) {
-      console.error('Unexpected error:', error);
+      return Number.isInteger(number) && number >= 1 ? `#${number}` : null;
+    } catch {
       return null;
     }
   };
 
-  /* صياغة رسالة الواتساب وتفصيل كل وجبة بملاحظاتها */
+  // بناء نص رسالة الواتساب بنفس تنسيق العرض
   const buildWhatsAppMessage = (orderNum: string) => {
     const now = new Date();
     const date = `${String(now.getDate()).padStart(2, '0')}/${String(
@@ -103,29 +103,35 @@ export default function Order() {
       now.getMinutes()
     ).padStart(2, '0')}`;
 
-    let msg = `🍔 CHEESY MEDENINE\n\n`;
-    msg += `🆔 Order: ${orderNum}\n\n`;
-    msg += `👤 Name:\n${name}\n\n`;
-    msg += `📞 Phone:\n${phone}\n\n`;
-    msg += `📍 Address:\n${address}\n\n`;
-    msg += `🛒 Order:\n`;
+    let msg = `🛒 Order:\n\n`;
 
-    cartItems.forEach(({ item, quantity }) => {
-      const itemCustomNotes = itemNotesMap[item.id];
-      msg += `• ${item.nameFr} ×${quantity}\n`;
-      if (itemCustomNotes && itemCustomNotes.trim()) {
-        msg += `   └ 📝 ${itemCustomNotes}\n`;
+    cartItems.forEach(({ item, quantity }, itemIndex) => {
+      for (let unitIndex = 0; unitIndex < quantity; unitIndex++) {
+        const noteKey = `${itemIndex}-${unitIndex}`;
+        const customNotes = itemNotesMap[noteKey];
+
+        msg += `• ${item.nameFr} - ${unitIndex + 1}\n`;
+
+        if (customNotes && customNotes.trim()) {
+          msg += `  └ 📝 ${customNotes}\n`;
+        } else {
+          msg += `  └ 📝 Tout\n`;
+        }
       }
     });
 
-    msg += `\n💰 Total:\n${totalPrice.toFixed(1)} ${t.dt}\n`;
+    msg += `\n🆔 Order: ${orderNum}\n`;
+    msg += `👤 Nom: ${name}\n`;
+    msg += `📞 Tél: ${phone}\n`;
+    msg += `📍 Adresse: ${address}\n`;
+    msg += `💰 Total: ${totalPrice.toFixed(1)} ${t.dt}\n`;
 
     if (generalNotes.trim()) {
-      msg += `\n📌 General Notes:\n${generalNotes}\n`;
+      msg += `📌 Notes: ${generalNotes}\n`;
     }
 
-    msg += `\n🕒 Time:\n${time}\n`;
-    msg += `\n📅 Date:\n${date}\n`;
+    msg += `🕒 ${time} | 📅 ${date}\n`;
+
     return msg;
   };
 
@@ -158,7 +164,6 @@ export default function Order() {
 
   const handleConfirmOrder = () => {
     if (!orderNumber) return;
-
     const message = buildWhatsAppMessage(orderNumber);
     const whatsappUrl = `https://wa.me/21698157474?text=${encodeURIComponent(
       message
@@ -189,7 +194,6 @@ export default function Order() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Cart Items with Individual Customization */}
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-xl font-black text-[#2C2C2C] dark:text-white">
@@ -203,12 +207,10 @@ export default function Order() {
                 </button>
               </div>
 
-              {cartItems.map(({ item, quantity }) => {
-                const currentItemNotes = itemNotesMap[item.id] || '';
-
+              {cartItems.map(({ item, quantity }, itemIndex) => {
                 return (
                   <div
-                    key={item.id}
+                    key={`${item.id}-${itemIndex}`}
                     className="p-4 rounded-2xl bg-white dark:bg-[#2C2C2C] shadow-sm space-y-3"
                   >
                     <div className="flex gap-4">
@@ -259,35 +261,58 @@ export default function Order() {
                       </div>
                     </div>
 
-                    {/* خيارات الاستبعاد الخاصة بـ هذه الوجبة المحددة فقط */}
-                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                      <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1.5">
-                        {isRTL
-                          ? `خيارات خاصة بـ (${item.nameFr}):`
-                          : `Options pour (${item.nameFr}):`}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {quickDislikes.map((ingredient) => {
-                          const isSelected = currentItemNotes.includes(ingredient);
-                          return (
-                            <button
-                              key={ingredient}
-                              type="button"
-                              onClick={() =>
-                                handleToggleIngredientForItem(item.id, ingredient)
-                              }
-                              className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                                isSelected
-                                  ? 'bg-[#F6B21A] text-[#2C2C2C] shadow-sm'
-                                  : 'bg-[#FAF9F6] dark:bg-[#1a1a1a] text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
-                              }`}
-                            >
-                              {ingredient} {isSelected ? '✓' : '+'}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    {/* عرض خيارات التخصيص لكل قطعة على حدة */}
+                    {Array.from({ length: quantity }).map((_, unitIndex) => {
+                      const noteKey = `${itemIndex}-${unitIndex}`;
+                      const currentUnitNotes = itemNotesMap[noteKey] || '';
+
+                      return (
+                        <div
+                          key={noteKey}
+                          className="pt-3 mt-3 border-t border-gray-100 dark:border-gray-800"
+                        >
+                          <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">
+                            {item.nameFr} - {unitIndex + 1}
+                          </p>
+
+                          <div className="flex flex-wrap gap-1.5">
+                            {quickDislikes.map((ingredient) => {
+                              const isSelected = currentUnitNotes.includes(ingredient);
+                              return (
+                                <button
+                                  key={ingredient}
+                                  type="button"
+                                  onClick={() =>
+                                    handleToggleIngredient(
+                                      itemIndex,
+                                      unitIndex,
+                                      ingredient
+                                    )
+                                  }
+                                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                                    isSelected
+                                      ? 'bg-[#F6B21A] text-[#2C2C2C] shadow-sm'
+                                      : 'bg-[#FAF9F6] dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100'
+                                  }`}
+                                >
+                                  {ingredient} {isSelected ? '✓' : '+'}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {currentUnitNotes ? (
+                            <p className="text-[10px] text-[#F6B21A] mt-2 font-semibold">
+                              📝 {currentUnitNotes}
+                            </p>
+                          ) : (
+                            <p className="text-[10px] text-gray-400 mt-2 font-semibold">
+                              📝 Tout
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}
@@ -302,7 +327,6 @@ export default function Order() {
               </div>
             </div>
 
-            {/* Form */}
             <div className="space-y-5">
               <h2 className="text-xl font-black text-[#2C2C2C] dark:text-white">
                 {t.deliveryAddress}
@@ -358,7 +382,7 @@ export default function Order() {
                 <div>
                   <label className="flex items-center gap-2 text-sm font-bold text-[#2C2C2C] dark:text-white mb-2">
                     <FileText size={16} className="text-[#F6B21A]" />
-                    {isRTL ? 'ملاحظات عامة على الطلب' : 'Notes générales'}
+                    {isRTL ? 'ملاحظات عامة' : 'Notes générales'}
                   </label>
                   <textarea
                     value={generalNotes}
@@ -403,7 +427,6 @@ export default function Order() {
           </div>
         )}
 
-        {/* Modal */}
         {showConfirm && (
           <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm flex items-center justify-center p-3">
             <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-2xl max-w-md w-full max-h-[92vh] flex flex-col overflow-hidden">
@@ -467,26 +490,27 @@ export default function Order() {
                     {isRTL ? 'الطلبات' : 'Articles'}:
                   </p>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {cartItems.map(({ item, quantity }) => {
-                      const itemCustomNotes = itemNotesMap[item.id];
-                      return (
-                        <div key={item.id} className="text-xs space-y-0.5">
-                          <div className="flex justify-between">
-                            <span className="text-[#2C2C2C] dark:text-white font-medium">
-                              • {item.nameFr} ×{quantity}
-                            </span>
-                            <span className="font-bold text-[#2C2C2C] dark:text-white">
-                              {(item.price * quantity).toFixed(1)} {t.dt}
-                            </span>
-                          </div>
-                          {itemCustomNotes && (
+                    {cartItems.flatMap(({ item, quantity }, itemIdx) =>
+                      Array.from({ length: quantity }).map((_, unitIdx) => {
+                        const key = `${itemIdx}-${unitIdx}`;
+                        const customNotes = itemNotesMap[key];
+                        return (
+                          <div key={key} className="text-xs space-y-0.5">
+                            <div className="flex justify-between">
+                              <span className="text-[#2C2C2C] dark:text-white font-medium">
+                                • {item.nameFr} - {unitIdx + 1}
+                              </span>
+                              <span className="font-bold text-[#2C2C2C] dark:text-white">
+                                {item.price.toFixed(1)} {t.dt}
+                              </span>
+                            </div>
                             <p className="text-[10px] text-[#F6B21A] pl-3">
-                              └ {itemCustomNotes}
+                              └ 📝 {customNotes && customNotes.trim() ? customNotes : 'Tout'}
                             </p>
-                          )}
-                        </div>
-                      );
-                    })}
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
 
