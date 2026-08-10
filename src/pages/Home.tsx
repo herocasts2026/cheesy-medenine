@@ -19,47 +19,37 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <img src="/images/cheesy_hero.png" alt="Cheesy Medenine" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#2C2C2C]/70 via-[#2C2C2C]/50 to-[#2C2C2C]/80" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F6B21A]/20 via-transparent to-[#FF9F1C]/20" />
-        </div>
+      <section 
+        className="relative min-h-[85vh] flex items-center justify-center bg-cover bg-center bg-no-repeat pt-32 pb-24 px-4 overflow-hidden"
+        style={{ backgroundImage: "url('/cheesy_1.jfif')" }}
+      >
+        {/* Dark Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/60 backdrop-brightness-75" />
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6 animate-fade-in-up">
             <span className="w-2 h-2 rounded-full bg-[#F6B21A] animate-pulse" />
             <span className="text-white text-sm font-semibold">Médenine, Tunisie</span>
           </div>
-
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.1] mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             {t.heroTitle} <span className="text-[#F6B21A]">{t.heroTitleHighlight}</span><br />
             {t.heroSubtitle}
           </h1>
-
           <p className="text-lg sm:text-xl text-white/80 mb-10 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             {t.heroDescription}
           </p>
-
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <Link
-              to="/order"
-              className="group inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#F6B21A] hover:bg-[#FF9F1C] text-[#2C2C2C] font-black text-base transition-all hover:scale-105 shadow-2xl shadow-[#F6B21A]/30"
-            >
-              {t.orderNow}
-              <ArrowRight size={20} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
+            <Link to="/order" className="group inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#F6B21A] hover:bg-[#FF9F1C] text-[#2C2C2C] font-black text-base transition-all hover:scale-105 shadow-2xl shadow-[#F6B21A]/30" >
+              {t.orderNow} <ArrowRight size={20} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
             </Link>
-            <Link
-              to="/menu"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/30 text-white font-bold text-base hover:bg-white/20 transition-all"
-            >
+            <Link to="/menu" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/30 text-white font-bold text-base hover:bg-white/20 transition-all" >
               {t.viewMenu}
             </Link>
           </div>
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce z-10">
           <div className="w-6 h-10 rounded-full border-2 border-white/40 flex items-start justify-center p-2">
             <div className="w-1 h-2 rounded-full bg-white/60" />
           </div>
@@ -71,10 +61,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((f, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center text-center p-6 rounded-3xl bg-white dark:bg-[#2C2C2C] shadow-sm hover:shadow-xl transition-all hover:-translate-y-1"
-              >
+              <div key={i} className="flex flex-col items-center text-center p-6 rounded-3xl bg-white dark:bg-[#2C2C2C] shadow-sm hover:shadow-xl transition-all hover:-translate-y-1" >
                 <div className="w-14 h-14 rounded-2xl bg-[#F6B21A]/10 flex items-center justify-center mb-4">
                   <f.icon size={26} className="text-[#F6B21A]" />
                 </div>
@@ -93,7 +80,6 @@ export default function Home() {
             <p className="text-[#F6B21A] font-black uppercase tracking-wider text-sm mb-2">{t.ourMenu}</p>
             <h2 className="text-4xl font-black text-[#2C2C2C] dark:text-white">{t.ourMenuSub}</h2>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredItems.map(item => (
               <div key={item.id} className="group rounded-3xl overflow-hidden bg-[#FAF9F6] dark:bg-[#1a1a1a] shadow-sm hover:shadow-2xl transition-all hover:-translate-y-2">
@@ -118,20 +104,13 @@ export default function Home() {
               </div>
             ))}
           </div>
-
           <div className="text-center mt-12">
-            <Link
-              to="/menu"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#2C2C2C] dark:bg-[#F6B21A] text-white dark:text-[#2C2C2C] font-black transition-all hover:scale-105"
-            >
-              {t.viewMenu}
-              <ArrowRight size={20} className={isRTL ? 'rotate-180' : ''} />
+            <Link to="/menu" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#2C2C2C] dark:bg-[#F6B21A] text-white dark:text-[#2C2C2C] font-black transition-all hover:scale-105" >
+              {t.viewMenu} <ArrowRight size={20} className={isRTL ? 'rotate-180' : ''} />
             </Link>
           </div>
         </div>
       </section>
-
-
 
       {/* Categories Preview */}
       <section className="py-20 bg-white dark:bg-[#2C2C2C]">
@@ -141,11 +120,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {menuCategories.map(cat => (
-              <Link
-                key={cat.id}
-                to="/menu"
-                className="group flex flex-col items-center p-8 rounded-3xl bg-[#FAF9F6] dark:bg-[#1a1a1a] hover:bg-[#F6B21A] transition-all hover:-translate-y-2"
-              >
+              <Link key={cat.id} to="/menu" className="group flex flex-col items-center p-8 rounded-3xl bg-[#FAF9F6] dark:bg-[#1a1a1a] hover:bg-[#F6B21A] transition-all hover:-translate-y-2" >
                 <span className="text-5xl mb-3">{cat.icon}</span>
                 <span className="font-black text-[#2C2C2C] dark:text-white group-hover:text-[#2C2C2C] transition-colors">{cat.nameFr}</span>
                 <span className="text-sm text-gray-500 group-hover:text-[#2C2C2C]/70 mt-1">
