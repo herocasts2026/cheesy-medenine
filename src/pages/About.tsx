@@ -30,7 +30,6 @@ export default function About() {
                 src="/images/cheezy_1.jfif" 
                 alt="Cheesy Medenine" 
                 className="relative w-full h-96 object-cover rounded-3xl shadow-2xl" 
-                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} 
               />
             </div>
           </div>
