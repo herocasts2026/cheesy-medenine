@@ -21,7 +21,7 @@ export default function Home() {
       {/* Hero */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden bg-gray-900">
         <div className="absolute inset-0 z-0 opacity-40">
-          <img src="/tacos/cheesy_1.jfif" alt="Cheesy Medenine" className="w-full h-full object-cover" />
+          <img src="/images/cheezy_1.jfif" alt="Cheesy Medenine" className="w-full h-full object-cover" />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-black/40 z-0" />
 
