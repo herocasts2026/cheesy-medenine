@@ -12,13 +12,13 @@ export default function About() {
   ];
 
   return (
-    <div className="pt-24 pb-20 bg-[#FAF9F6] dark:bg-[#1a1a1a] min-h-screen">
+    <div className="py-20 bg-[#FAF9F6] dark:bg-[#1a1a1a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
           <p className="text-[#F6B21A] font-black uppercase tracking-wider text-sm mb-2">{t.about}</p>
           <h1 className="text-4xl sm:text-5xl font-black text-[#2C2C2C] dark:text-white mb-4">{t.aboutTitle}</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">{t.aboutSub}</p>
+          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">{t.aboutSub}</p>
         </div>
 
         {/* Story */}
@@ -26,7 +26,12 @@ export default function About() {
           <div className={isRTL ? 'order-2' : ''}>
             <div className="relative">
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#F6B21A] to-[#FF9F1C] opacity-20 blur-2xl" />
-              <img src="/images/cheesy_hero.png" alt="Cheesy Medenine" className="relative w-full h-96 object-cover rounded-3xl shadow-2xl" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} />
+              <img 
+                src="/cheesy_1.jfif" 
+                alt="Cheesy Medenine" 
+                className="relative w-full h-96 object-cover rounded-3xl shadow-2xl" 
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} 
+              />
             </div>
           </div>
           <div>
@@ -35,19 +40,13 @@ export default function About() {
             </h2>
             <div className="space-y-4 text-gray-600 dark:text-gray-400 leading-relaxed">
               <p>
-                {isRTL
-                  ? 'بدأت تشيزي مدنين برؤية بسيطة: تقديم طعام عالي الجودة بطابع عصري في قلب مدنين. نحن نؤمن أن كل وجبة يجب أن تكون تجربة لا تُنسى.'
-                  : 'Cheesy Medenine a commencé avec une vision simple : servir une nourriture de haute qualité avec une touche moderne au cœur de Médenine. Nous croyons que chaque repas doit être une expérience inoubliable.'}
+                {isRTL ? 'بدأت تشيزي مدنين برؤية بسيطة: تقديم طعام عالي الجودة بطابع عصري في قلب مدنين. نحن نؤمن أن كل وجبة يجب أن تكون تجربة لا تُنسى.' : 'Cheesy Medenine a commencé avec une vision simple : servir une nourriture de haute qualité avec une touche moderne au cœur de Médenine. Nous croyons que chaque repas doit être une expérience inoubliable.'}
               </p>
               <p>
-                {isRTL
-                  ? 'من البرغر الطازج إلى الأطباق الشهية والحلويات اللذيذة، كل طبق يُعدّ بعناية باستخدام أجود المكونات. شغفنا بالطهي يظهر في كل قضمة.'
-                  : 'Des burgers frais aux plats savoureux et desserts délicieux, chaque plat est préparé avec soin en utilisant les meilleurs ingrédients. Notre passion pour la cuisine transparaît dans chaque bouchée.'}
+                {isRTL ? 'من البرغر الطازج إلى الأطباق الشهية والحلويات اللذيذة، كل طبق يُعدّ بعناية باستخدام أجود المكونات. شغفنا بالطهي يظهر في كل قضمة.' : 'Des burgers frais aux plats savoureux et desserts délicieux, chaque plat est préparé avec soin en utilisant les meilleurs ingrédients. Notre passion pour la cuisine transparaît dans chaque bouchée.'}
               </p>
               <p>
-                {isRTL
-                  ? 'نحن فخورون بأن نكون جزءاً من مجتمع مدنين ونلتزم بتقديم أفضل تجربة طعام لعملائنا الكرام.'
-                  : 'Nous sommes fiers d\'être une partie de la communauté de Médenine et nous nous engageons à offrir la meilleure expérience culinaire à nos précieux clients.'}
+                {isRTL ? 'نحن فخورون بأن نكون جزءاً من مجتمع مدنين ونلتزم بتقديم أفضل تجربة طعام لعملائنا الكرام.' : 'Nous sommes fiers d\'être une partie de la communauté de Médenine et nous nous engageons à offrir la meilleure expérience culinaire à nos précieux clients.'}
               </p>
             </div>
           </div>
