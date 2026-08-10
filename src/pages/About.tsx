@@ -27,7 +27,7 @@ export default function About() {
             <div className="relative">
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#F6B21A] to-[#FF9F1C] opacity-20 blur-2xl" />
               <img 
-                src="/tacos/cheesy_1.jfif" 
+                src="/images/cheezy_1.jfif" 
                 alt="Cheesy Medenine" 
                 className="relative w-full h-96 object-cover rounded-3xl shadow-2xl" 
                 onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} 
