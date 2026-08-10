@@ -17,14 +17,13 @@ export default function Home() {
   ];
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#FAF9F6] dark:bg-[#1a1a1a]">
       {/* Hero */}
-      <section 
-        className="relative min-h-[85vh] flex items-center justify-center bg-cover bg-center bg-no-repeat pt-32 pb-24 px-4 overflow-hidden"
-        style={{ backgroundImage: "url('/cheesy_1.jfif')" }}
-      >
-        {/* Dark Overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/60 backdrop-brightness-75" />
+      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden bg-gray-900">
+        <div className="absolute inset-0 z-0 opacity-40">
+          <img src="/tacos/cheesy_1.jfif" alt="Cheesy Medenine" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback-food.png'; }} />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-black/40 z-0" />
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6 animate-fade-in-up">
@@ -40,7 +39,8 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <Link to="/order" className="group inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#F6B21A] hover:bg-[#FF9F1C] text-[#2C2C2C] font-black text-base transition-all hover:scale-105 shadow-2xl shadow-[#F6B21A]/30" >
-              {t.orderNow} <ArrowRight size={20} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
+              {t.orderNow}
+              <ArrowRight size={20} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
             </Link>
             <Link to="/menu" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/30 text-white font-bold text-base hover:bg-white/20 transition-all" >
               {t.viewMenu}
@@ -49,7 +49,7 @@ export default function Home() {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce z-10">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <div className="w-6 h-10 rounded-full border-2 border-white/40 flex items-start justify-center p-2">
             <div className="w-1 h-2 rounded-full bg-white/60" />
           </div>
@@ -106,7 +106,8 @@ export default function Home() {
           </div>
           <div className="text-center mt-12">
             <Link to="/menu" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#2C2C2C] dark:bg-[#F6B21A] text-white dark:text-[#2C2C2C] font-black transition-all hover:scale-105" >
-              {t.viewMenu} <ArrowRight size={20} className={isRTL ? 'rotate-180' : ''} />
+              {t.viewMenu}
+              <ArrowRight size={20} className={isRTL ? 'rotate-180' : ''} />
             </Link>
           </div>
         </div>
