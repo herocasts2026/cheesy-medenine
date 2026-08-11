@@ -50,22 +50,43 @@ export default function Order() {
     'Sans Oeuf',
   ];
 
-  // تخصيص الأطباق المستثناة من أزرار الاستبعاد
-  const isExcludedFromCustomization = (item: any) => {
-    const category = item?.category?.toLowerCase() || '';
-    const categoryId = item?.category_id?.toLowerCase() || '';
-    const name = item?.nameFr?.toLowerCase() || '';
+  // دالة مخصصة بدقة للتحقق من الأطباق التي تقبل خيارات الاستبعاد
+  const hasCustomizations = (item?: { nameFr?: string; category?: string }) => {
+    if (!item) return true;
+    
+    const lowerCategory = (item.category || '').toLowerCase();
+    const lowerName = (item.nameFr || '').toLowerCase();
 
-    // الأطباق والمواد التي يُلغى منها ظهور أزرار (Sans Harissa...)
-    const excludedKeywords = [
-      'boisson', 'boissons', 'sucré', 'sucre', 'dessert', 'desserts', 'drink', 'drinks', 'mojito', 'coffee', 'shake', 'pancake', 'cheesecake', 'eau',
-      'frite', 'frites', 'sauce', 'mayonnaise', 'harissa', 'ketchup', 'algérienne', 'algerienne', 'barbecue', 'ail',
-      'crispy'
+    // 1. استثناء طبق Crispy Chicken بالاسم
+    if (lowerName.includes('crispy chicken') || lowerName.includes('crispy')) {
+      return false;
+    }
+
+    // 2. استثناء الأقسام المحددة من العميل
+    const excludedCategories = [
+      'boissons',
+      'boisson',
+      'boissons et eau minérale',
+      'frites et sauces',
+      'frites',
+      'sauces',
+      'menu sucré',
+      'sucré',
+      'desserts',
+      'dessert',
+      'jus',
+      'mojito',
     ];
 
-    return excludedKeywords.some(
-      (keyword) => category.includes(keyword) || categoryId.includes(keyword) || name.includes(keyword)
+    const isExcludedCategory = excludedCategories.some((cat) =>
+      lowerCategory.includes(cat)
     );
+
+    if (isExcludedCategory) {
+      return false;
+    }
+
+    return true;
   };
 
   const handleToggleIngredient = (
@@ -82,6 +103,7 @@ export default function Order() {
           .split(', ')
           .filter((x) => x !== ingredient)
           .join(', ');
+
         const next = { ...prev };
         if (updated) {
           next[key] = updated;
@@ -90,6 +112,7 @@ export default function Order() {
         }
         return next;
       }
+
       return {
         ...prev,
         [key]: current ? `${current}, ${ingredient}` : ingredient,
@@ -118,13 +141,16 @@ export default function Order() {
     ).padStart(2, '0')}`;
 
     let msg = `🛒 Order:\n\n`;
+
     cartItems.forEach(({ item, quantity }, itemIndex) => {
-      const isExcluded = isExcludedFromCustomization(item);
       for (let unitIndex = 0; unitIndex < quantity; unitIndex++) {
         const noteKey = `${itemIndex}-${unitIndex}`;
         const customNotes = itemNotesMap[noteKey];
+        const canCustomize = hasCustomizations(item);
+
         msg += `• ${item.nameFr} - ${unitIndex + 1}\n`;
-        if (!isExcluded) {
+
+        if (canCustomize) {
           if (customNotes && customNotes.trim()) {
             msg += `  └ 📝 ${customNotes}\n`;
           } else {
@@ -133,15 +159,19 @@ export default function Order() {
         }
       }
     });
+
     msg += `\n🆔 Order: ${orderNum}\n`;
     msg += `👤 Nom: ${name}\n`;
     msg += `📞 Tél: ${phone}\n`;
     msg += `📍 Adresse: ${address}\n`;
     msg += `💰 Total: ${totalPrice.toFixed(1)} ${t.dt}\n`;
+
     if (generalNotes.trim()) {
       msg += `📌 Notes: ${generalNotes}\n`;
     }
+
     msg += `🕒 ${time} | 📅 ${date}\n`;
+
     return msg;
   };
 
@@ -190,10 +220,9 @@ export default function Order() {
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] dark:bg-[#121212] py-8 px-4 sm:px-6 lg:px-8 transition-colors">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <h1 className="text-3xl font-black text-[#2C2C2C] dark:text-white flex items-center gap-3">
-          <ShoppingBag className="text-[#F6B21A]" />
-          <span>{t.yourOrder}</span>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <h1 className="text-3xl font-black text-[#2C2C2C] dark:text-white text-center">
+          {t.yourOrder}
         </h1>
 
         {cartItems.length === 0 ? (
@@ -219,7 +248,8 @@ export default function Order() {
               </div>
 
               {cartItems.map(({ item, quantity }, itemIndex) => {
-                const isExcluded = isExcludedFromCustomization(item);
+                const canCustomize = hasCustomizations(item);
+
                 return (
                   <div
                     key={`${item.id}-${itemIndex}`}
@@ -273,11 +303,12 @@ export default function Order() {
                       </div>
                     </div>
 
-                    {/* أزرار استبعاد المكونات تظهر هنا لتاكوس جيون بجميع أنواعه ولكل الأطباق باستثناء السكريات والمشروبات والفريت والصلصات */}
-                    {!isExcluded &&
+                    {/* إظهار خيارات التخصيص فقط للأصناف القابلة للتخصيص (مثل البرجر، الطاكوس، والسكالوب) */}
+                    {canCustomize &&
                       Array.from({ length: quantity }).map((_, unitIndex) => {
                         const noteKey = `${itemIndex}-${unitIndex}`;
                         const currentUnitNotes = itemNotesMap[noteKey] || '';
+
                         return (
                           <div
                             key={noteKey}
@@ -286,9 +317,11 @@ export default function Order() {
                             <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">
                               {item.nameFr} - {unitIndex + 1}
                             </p>
+
                             <div className="flex flex-wrap gap-1.5">
                               {quickDislikes.map((ingredient) => {
-                                const isSelected = currentUnitNotes.includes(ingredient);
+                                const isSelected =
+                                  currentUnitNotes.includes(ingredient);
                                 return (
                                   <button
                                     key={ingredient}
@@ -311,6 +344,7 @@ export default function Order() {
                                 );
                               })}
                             </div>
+
                             {currentUnitNotes ? (
                               <p className="text-[10px] text-[#F6B21A] mt-2 font-semibold">
                                 📝 {currentUnitNotes}
@@ -501,33 +535,29 @@ export default function Order() {
                   </p>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {cartItems.flatMap(({ item, quantity }, itemIdx) => {
-                      const isExcluded = isExcludedFromCustomization(item);
-                      return Array.from({ length: quantity }).map(
-                        (_, unitIdx) => {
-                          const key = `${itemIdx}-${unitIdx}`;
-                          const customNotes = itemNotesMap[key];
-                          return (
-                            <div key={key} className="text-xs space-y-0.5">
-                              <div className="flex justify-between">
-                                <span className="text-[#2C2C2C] dark:text-white font-medium">
-                                  • {item.nameFr} - {unitIdx + 1}
-                                </span>
-                                <span className="font-bold text-[#2C2C2C] dark:text-white">
-                                  {item.price.toFixed(1)} {t.dt}
-                                </span>
-                              </div>
-                              {!isExcluded && (
-                                <p className="text-[10px] text-[#F6B21A] pl-3">
-                                  └ 📝{' '}
-                                  {customNotes && customNotes.trim()
-                                    ? customNotes
-                                    : 'Tout'}
-                                </p>
-                              )}
+                      const canCustomize = hasCustomizations(item);
+
+                      return Array.from({ length: quantity }).map((_, unitIdx) => {
+                        const key = `${itemIdx}-${unitIdx}`;
+                        const customNotes = itemNotesMap[key];
+                        return (
+                          <div key={key} className="text-xs space-y-0.5">
+                            <div className="flex justify-between">
+                              <span className="text-[#2C2C2C] dark:text-white font-medium">
+                                • {item.nameFr} - {unitIdx + 1}
+                              </span>
+                              <span className="font-bold text-[#2C2C2C] dark:text-white">
+                                {item.price.toFixed(1)} {t.dt}
+                              </span>
                             </div>
-                          );
-                        }
-                      );
+                            {canCustomize && (
+                              <p className="text-[10px] text-[#F6B21A] pl-3">
+                                └ 📝 {customNotes && customNotes.trim() ? customNotes : 'Tout'}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      });
                     })}
                   </div>
                 </div>
