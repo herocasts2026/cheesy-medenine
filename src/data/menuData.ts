@@ -72,6 +72,9 @@ export const tacosSansOptions: string[] = [
   'Sans oignon',
 ];
 
+// رابط صورة العصائر الجديدة
+const freshJuiceImageUrl = 'https://img.magnific.com/psd-premium/jus-fruits-frais-fruits_1167087-920.jpg?semt=ais_test_b&w=740&q=80';
+
 export const menuItems: MenuItem[] = [
   // --- BURGERS ---
   {
@@ -285,7 +288,6 @@ export const menuItems: MenuItem[] = [
     descriptionAr: 'سلطة سيزر طازجة مع شرائح دجاج مشوي وخبز محمص وصلصة.',
     category: 'plats',
     supplements: globalSupplements,
-    sauces: availableSauces,
   },
   {
     id: 'plat-escalope',
@@ -299,7 +301,6 @@ export const menuItems: MenuItem[] = [
     descriptionAr: 'إسكالوب دجاج يُقدم مع الأرز والبطاطس والسلطة الطازجة.',
     category: 'plats',
     supplements: globalSupplements,
-    sauces: availableSauces,
   },
   {
     id: 'crispy-chicken',
@@ -313,7 +314,6 @@ export const menuItems: MenuItem[] = [
     descriptionAr: 'قطع دجاج مقرمشة ذهبية تُقدم مع البطاطس والصلصات.',
     category: 'plats',
     supplements: globalSupplements,
-    sauces: availableSauces,
   },
   {
     id: 'plat-escalope-creme',
@@ -327,7 +327,6 @@ export const menuItems: MenuItem[] = [
     descriptionAr: 'إسكالوب دجاج طري في صلصة كريمية غنية بالفطر مع الأرز.',
     category: 'plats',
     supplements: globalSupplements,
-    sauces: availableSauces,
   },
   {
     id: 'plat-kebab',
@@ -341,7 +340,6 @@ export const menuItems: MenuItem[] = [
     descriptionAr: 'لحم مشوي على الأسياخ يُقدم مع الأرز والبطاطس وصلصة الثوم والسلطة.',
     category: 'plats',
     supplements: globalSupplements,
-    sauces: availableSauces,
   },
 
   // --- BOISSONS ---
@@ -351,7 +349,7 @@ export const menuItems: MenuItem[] = [
     nameFr: 'Jus Frais Fraise',
     nameAr: 'عصير فراولة طازج',
     price: 8,
-    images: ['/images/boissons/boisson.jpg.jpeg'],
+    images: [freshJuiceImageUrl],
     description: 'Fresh natural strawberry juice.',
     descriptionFr: 'Jus naturel frais de fraise.',
     descriptionAr: 'عصير فراولة طبيعي وطازج.',
@@ -363,7 +361,7 @@ export const menuItems: MenuItem[] = [
     nameFr: 'Jus Frais Ananas',
     nameAr: 'عصير أناناس طازج',
     price: 8,
-    images: ['/images/boissons/boisson.jpg.jpeg'],
+    images: [freshJuiceImageUrl],
     description: 'Fresh natural pineapple juice.',
     descriptionFr: "Jus naturel frais d'ananas.",
     descriptionAr: 'عصير أناناس طبيعي وطازج.',
@@ -375,7 +373,7 @@ export const menuItems: MenuItem[] = [
     nameFr: 'Jus Frais Kiwi',
     nameAr: 'عصير كيوي طازج',
     price: 8,
-    images: ['/images/boissons/boisson.jpg.jpeg'],
+    images: [freshJuiceImageUrl],
     description: 'Fresh natural kiwi juice.',
     descriptionFr: 'Jus naturel frais de kiwi.',
     descriptionAr: 'عصير كيوي طبيعي وطازج.',
@@ -387,7 +385,7 @@ export const menuItems: MenuItem[] = [
     nameFr: 'Jus Frais Mangue',
     nameAr: 'عصير مانجو طازج',
     price: 8,
-    images: ['/images/boissons/boisson.jpg.jpeg'],
+    images: [freshJuiceImageUrl],
     description: 'Fresh natural mango juice.',
     descriptionFr: 'Jus naturel frais de mangue.',
     descriptionAr: 'عصير مانجو طبيعي وطازج.',
@@ -399,7 +397,7 @@ export const menuItems: MenuItem[] = [
     nameFr: 'Jus Frais Citron',
     nameAr: 'عصير ليمون طازج',
     price: 6,
-    images: ['/images/boissons/boisson.jpg.jpeg'],
+    images: [freshJuiceImageUrl],
     description: 'Refreshing fresh lemon juice.',
     descriptionFr: 'Jus naturel frais de citron rafraîchissant.',
     descriptionAr: 'عصير ليمون طبيعي ومنعش.',
