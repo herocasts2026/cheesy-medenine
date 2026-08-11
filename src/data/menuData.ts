@@ -41,7 +41,6 @@ export const globalSupplements: Supplement[] = [
   { name: 'Emmental', price: 4 },
   { name: 'Frites', price: 4 },
   { name: 'Cheddar burger', price: 6 },
-  { name: 'Sauce aux champignons', price: 10 },
   { name: 'Oeuf', price: 1.5 },
   { name: 'Supplément césar', price: 4 },
   { name: 'Sauce', price: 1.5 },
