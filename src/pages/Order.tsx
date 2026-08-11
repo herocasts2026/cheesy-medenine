@@ -50,48 +50,21 @@ export default function Order() {
     'Sans Oeuf',
   ];
 
-  // دالة للتحقق مما إذا كان المنتج مستثنى من خيارات الاستبعاد والتخصيص
+  // تخصيص الأطباق المستثناة من أزرار الاستبعاد
   const isExcludedFromCustomization = (item: any) => {
     const category = item?.category?.toLowerCase() || '';
     const categoryId = item?.category_id?.toLowerCase() || '';
     const name = item?.nameFr?.toLowerCase() || '';
 
+    // الأطباق والمواد التي يُلغى منها ظهور أزرار (Sans Harissa...)
     const excludedKeywords = [
-      // 1. المشروبات والحلويات
-      'boisson',
-      'boissons',
-      'sucré',
-      'sucre',
-      'dessert',
-      'desserts',
-      'drink',
-      'drinks',
-      'mojito',
-      'coffee',
-      'shake',
-      'pancake',
-      'cheesecake',
-      'eau',
-      // 2. الصلصات والبطاطس
-      'frite',
-      'frites',
-      'sauce',
-      'mayonnaise',
-      'harissa',
-      'ketchup',
-      'algérienne',
-      'algerienne',
-      'barbecue',
-      'ail',
-      // 3. أطباق مستثناة بالتحديد مثل كريسبي تشيكن
-      'crispy',
+      'boisson', 'boissons', 'sucré', 'sucre', 'dessert', 'desserts', 'drink', 'drinks', 'mojito', 'coffee', 'shake', 'pancake', 'cheesecake', 'eau',
+      'frite', 'frites', 'sauce', 'mayonnaise', 'harissa', 'ketchup', 'algérienne', 'algerienne', 'barbecue', 'ail',
+      'crispy'
     ];
 
     return excludedKeywords.some(
-      (keyword) =>
-        category.includes(keyword) ||
-        categoryId.includes(keyword) ||
-        name.includes(keyword)
+      (keyword) => category.includes(keyword) || categoryId.includes(keyword) || name.includes(keyword)
     );
   };
 
@@ -109,7 +82,6 @@ export default function Order() {
           .split(', ')
           .filter((x) => x !== ingredient)
           .join(', ');
-
         const next = { ...prev };
         if (updated) {
           next[key] = updated;
@@ -118,7 +90,6 @@ export default function Order() {
         }
         return next;
       }
-
       return {
         ...prev,
         [key]: current ? `${current}, ${ingredient}` : ingredient,
@@ -147,15 +118,12 @@ export default function Order() {
     ).padStart(2, '0')}`;
 
     let msg = `🛒 Order:\n\n`;
-
     cartItems.forEach(({ item, quantity }, itemIndex) => {
       const isExcluded = isExcludedFromCustomization(item);
       for (let unitIndex = 0; unitIndex < quantity; unitIndex++) {
         const noteKey = `${itemIndex}-${unitIndex}`;
         const customNotes = itemNotesMap[noteKey];
-
         msg += `• ${item.nameFr} - ${unitIndex + 1}\n`;
-
         if (!isExcluded) {
           if (customNotes && customNotes.trim()) {
             msg += `  └ 📝 ${customNotes}\n`;
@@ -165,19 +133,15 @@ export default function Order() {
         }
       }
     });
-
     msg += `\n🆔 Order: ${orderNum}\n`;
     msg += `👤 Nom: ${name}\n`;
     msg += `📞 Tél: ${phone}\n`;
     msg += `📍 Adresse: ${address}\n`;
     msg += `💰 Total: ${totalPrice.toFixed(1)} ${t.dt}\n`;
-
     if (generalNotes.trim()) {
       msg += `📌 Notes: ${generalNotes}\n`;
     }
-
     msg += `🕒 ${time} | 📅 ${date}\n`;
-
     return msg;
   };
 
@@ -226,9 +190,10 @@ export default function Order() {
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] dark:bg-[#121212] py-8 px-4 sm:px-6 lg:px-8 transition-colors">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <h1 className="text-3xl font-black text-[#2C2C2C] dark:text-white text-center">
-          {t.yourOrder}
+      <div className="max-w-4xl mx-auto space-y-8">
+        <h1 className="text-3xl font-black text-[#2C2C2C] dark:text-white flex items-center gap-3">
+          <ShoppingBag className="text-[#F6B21A]" />
+          <span>{t.yourOrder}</span>
         </h1>
 
         {cartItems.length === 0 ? (
@@ -255,7 +220,6 @@ export default function Order() {
 
               {cartItems.map(({ item, quantity }, itemIndex) => {
                 const isExcluded = isExcludedFromCustomization(item);
-
                 return (
                   <div
                     key={`${item.id}-${itemIndex}`}
@@ -309,12 +273,11 @@ export default function Order() {
                       </div>
                     </div>
 
-                    {/* عرض أزرار التخصيص والاستبعاد فقط للأطباق غير المستثناة */}
+                    {/* أزرار استبعاد المكونات تظهر هنا لتاكوس جيون بجميع أنواعه ولكل الأطباق باستثناء السكريات والمشروبات والفريت والصلصات */}
                     {!isExcluded &&
                       Array.from({ length: quantity }).map((_, unitIndex) => {
                         const noteKey = `${itemIndex}-${unitIndex}`;
                         const currentUnitNotes = itemNotesMap[noteKey] || '';
-
                         return (
                           <div
                             key={noteKey}
@@ -323,11 +286,9 @@ export default function Order() {
                             <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">
                               {item.nameFr} - {unitIndex + 1}
                             </p>
-
                             <div className="flex flex-wrap gap-1.5">
                               {quickDislikes.map((ingredient) => {
-                                const isSelected =
-                                  currentUnitNotes.includes(ingredient);
+                                const isSelected = currentUnitNotes.includes(ingredient);
                                 return (
                                   <button
                                     key={ingredient}
@@ -350,7 +311,6 @@ export default function Order() {
                                 );
                               })}
                             </div>
-
                             {currentUnitNotes ? (
                               <p className="text-[10px] text-[#F6B21A] mt-2 font-semibold">
                                 📝 {currentUnitNotes}
