@@ -51,6 +51,49 @@ export default function Order() {
     'Sans Oeuf',
   ];
 
+  // دالة للتحقق مما إذا كان المنتج ينتمي للمشروبات، الحلويات، المقليات، أو الصلصات
+  const isExcludedFromCustomization = (item: any) => {
+    const category = item?.category?.toLowerCase() || '';
+    const categoryId = item?.category_id?.toLowerCase() || '';
+    const name = item?.nameFr?.toLowerCase() || '';
+
+    const excludedKeywords = [
+      // 1. المشروبات والحلويات
+      'boisson',
+      'boissons',
+      'sucré',
+      'sucre',
+      'dessert',
+      'desserts',
+      'drink',
+      'drinks',
+      'mojito',
+      'coffee',
+      'shake',
+      'pancake',
+      'cheesecake',
+      'eau',
+      // 2. الصلصات والبطاطس
+      'frite',
+      'frites',
+      'sauce',
+      'mayonnaise',
+      'harissa',
+      'ketchup',
+      'algérienne',
+      'algerienne',
+      'barbecue',
+      'ail',
+    ];
+
+    return excludedKeywords.some(
+      (keyword) =>
+        category.includes(keyword) ||
+        categoryId.includes(keyword) ||
+        name.includes(keyword)
+    );
+  };
+
   const handleToggleIngredient = (
     itemIndex: number,
     unitIndex: number,
@@ -106,16 +149,19 @@ export default function Order() {
     let msg = `🛒 Order:\n\n`;
 
     cartItems.forEach(({ item, quantity }, itemIndex) => {
+      const isExcluded = isExcludedFromCustomization(item);
       for (let unitIndex = 0; unitIndex < quantity; unitIndex++) {
         const noteKey = `${itemIndex}-${unitIndex}`;
         const customNotes = itemNotesMap[noteKey];
 
         msg += `• ${item.nameFr} - ${unitIndex + 1}\n`;
 
-        if (customNotes && customNotes.trim()) {
-          msg += `  └ 📝 ${customNotes}\n`;
-        } else {
-          msg += `  └ 📝 Tout\n`;
+        if (!isExcluded) {
+          if (customNotes && customNotes.trim()) {
+            msg += `  └ 📝 ${customNotes}\n`;
+          } else {
+            msg += `  └ 📝 Tout\n`;
+          }
         }
       }
     });
@@ -208,6 +254,8 @@ export default function Order() {
               </div>
 
               {cartItems.map(({ item, quantity }, itemIndex) => {
+                const isExcluded = isExcludedFromCustomization(item);
+
                 return (
                   <div
                     key={`${item.id}-${itemIndex}`}
@@ -261,58 +309,60 @@ export default function Order() {
                       </div>
                     </div>
 
-                    {/* عرض خيارات التخصيص لكل قطعة على حدة */}
-                    {Array.from({ length: quantity }).map((_, unitIndex) => {
-                      const noteKey = `${itemIndex}-${unitIndex}`;
-                      const currentUnitNotes = itemNotesMap[noteKey] || '';
+                    {/* عرض خيارات التخصيص فقط للأطباق التي تستوجب ذلك */}
+                    {!isExcluded &&
+                      Array.from({ length: quantity }).map((_, unitIndex) => {
+                        const noteKey = `${itemIndex}-${unitIndex}`;
+                        const currentUnitNotes = itemNotesMap[noteKey] || '';
 
-                      return (
-                        <div
-                          key={noteKey}
-                          className="pt-3 mt-3 border-t border-gray-100 dark:border-gray-800"
-                        >
-                          <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">
-                            {item.nameFr} - {unitIndex + 1}
-                          </p>
+                        return (
+                          <div
+                            key={noteKey}
+                            className="pt-3 mt-3 border-t border-gray-100 dark:border-gray-800"
+                          >
+                            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">
+                              {item.nameFr} - {unitIndex + 1}
+                            </p>
 
-                          <div className="flex flex-wrap gap-1.5">
-                            {quickDislikes.map((ingredient) => {
-                              const isSelected = currentUnitNotes.includes(ingredient);
-                              return (
-                                <button
-                                  key={ingredient}
-                                  type="button"
-                                  onClick={() =>
-                                    handleToggleIngredient(
-                                      itemIndex,
-                                      unitIndex,
-                                      ingredient
-                                    )
-                                  }
-                                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                                    isSelected
-                                      ? 'bg-[#F6B21A] text-[#2C2C2C] shadow-sm'
-                                      : 'bg-[#FAF9F6] dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100'
-                                  }`}
-                                >
-                                  {ingredient} {isSelected ? '✓' : '+'}
-                                </button>
-                              );
-                            })}
+                            <div className="flex flex-wrap gap-1.5">
+                              {quickDislikes.map((ingredient) => {
+                                const isSelected =
+                                  currentUnitNotes.includes(ingredient);
+                                return (
+                                  <button
+                                    key={ingredient}
+                                    type="button"
+                                    onClick={() =>
+                                      handleToggleIngredient(
+                                        itemIndex,
+                                        unitIndex,
+                                        ingredient
+                                      )
+                                    }
+                                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                                      isSelected
+                                        ? 'bg-[#F6B21A] text-[#2C2C2C] shadow-sm'
+                                        : 'bg-[#FAF9F6] dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100'
+                                    }`}
+                                  >
+                                    {ingredient} {isSelected ? '✓' : '+'}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {currentUnitNotes ? (
+                              <p className="text-[10px] text-[#F6B21A] mt-2 font-semibold">
+                                📝 {currentUnitNotes}
+                              </p>
+                            ) : (
+                              <p className="text-[10px] text-gray-400 mt-2 font-semibold">
+                                📝 Tout
+                              </p>
+                            )}
                           </div>
-
-                          {currentUnitNotes ? (
-                            <p className="text-[10px] text-[#F6B21A] mt-2 font-semibold">
-                              📝 {currentUnitNotes}
-                            </p>
-                          ) : (
-                            <p className="text-[10px] text-gray-400 mt-2 font-semibold">
-                              📝 Tout
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
                 );
               })}
@@ -490,27 +540,35 @@ export default function Order() {
                     {isRTL ? 'الطلبات' : 'Articles'}:
                   </p>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {cartItems.flatMap(({ item, quantity }, itemIdx) =>
-                      Array.from({ length: quantity }).map((_, unitIdx) => {
-                        const key = `${itemIdx}-${unitIdx}`;
-                        const customNotes = itemNotesMap[key];
-                        return (
-                          <div key={key} className="text-xs space-y-0.5">
-                            <div className="flex justify-between">
-                              <span className="text-[#2C2C2C] dark:text-white font-medium">
-                                • {item.nameFr} - {unitIdx + 1}
-                              </span>
-                              <span className="font-bold text-[#2C2C2C] dark:text-white">
-                                {item.price.toFixed(1)} {t.dt}
-                              </span>
+                    {cartItems.flatMap(({ item, quantity }, itemIdx) => {
+                      const isExcluded = isExcludedFromCustomization(item);
+                      return Array.from({ length: quantity }).map(
+                        (_, unitIdx) => {
+                          const key = `${itemIdx}-${unitIdx}`;
+                          const customNotes = itemNotesMap[key];
+                          return (
+                            <div key={key} className="text-xs space-y-0.5">
+                              <div className="flex justify-between">
+                                <span className="text-[#2C2C2C] dark:text-white font-medium">
+                                  • {item.nameFr} - {unitIdx + 1}
+                                </span>
+                                <span className="font-bold text-[#2C2C2C] dark:text-white">
+                                  {item.price.toFixed(1)} {t.dt}
+                                </span>
+                              </div>
+                              {!isExcluded && (
+                                <p className="text-[10px] text-[#F6B21A] pl-3">
+                                  └ 📝{' '}
+                                  {customNotes && customNotes.trim()
+                                    ? customNotes
+                                    : 'Tout'}
+                                </p>
+                              )}
                             </div>
-                            <p className="text-[10px] text-[#F6B21A] pl-3">
-                              └ 📝 {customNotes && customNotes.trim() ? customNotes : 'Tout'}
-                            </p>
-                          </div>
-                        );
-                      })
-                    )}
+                          );
+                        }
+                      );
+                    })}
                   </div>
                 </div>
 
