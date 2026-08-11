@@ -1,16 +1,60 @@
-import { X, Plus, Minus, Trash2, ShoppingBag, ImageIcon } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ShoppingBag, ImageIcon, ShoppingPack, Send } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { useNavigate } from 'react-router-dom';
 
 export default function CartDrawer() {
-  const { cartItems, removeFromCart, updateQuantity, totalPrice, isCartOpen, setIsCartOpen } = useCart();
-  const { t, isRTL } = useLang();
-  const navigate = useNavigate();
+  const {
+    cartItems,
+    removeFromCart,
+    updateQuantity,
+    totalPrice,
+    isCartOpen,
+    setIsCartOpen,
+    isTakeAway,
+    setIsTakeAway,
+  } = useCart();
 
-  const handleCheckout = () => {
-    setIsCartOpen(false);
-    navigate('/order');
+  const { t, isRTL } = useLang();
+
+  // رقم الواتساب الخاص بالمطعم (ضع رقم الهاتف التونسي هنا بدون رمز +)
+  const RESTAURANT_WHATSAPP_NUMBER = '21600000000'; 
+
+  const handleSendToWhatsApp = () => {
+    if (cartItems.length === 0) return;
+
+    let message = `🛒 *Nouvelle Commande - Cheesy Medenine*\n`;
+    message += `-------------------------------------------\n`;
+    message += `📍 *Type de commande:* ${isTakeAway ? '✅ *À EMPORTER (للأخذ)*' : '🍽️ Sur place (في المطعم)'}\n\n`;
+    message += `📋 *Détails de la commande:*\n`;
+
+    cartItems.forEach(({ item, quantity, unitPrice, selectedSupplements, selectedSauces, removedIngredients, comment }, index) => {
+      message += `\n*${index + 1}. ${item.nameFr}* (x${quantity}) - ${(unitPrice * quantity).toFixed(1)} DT\n`;
+
+      if (selectedSupplements && selectedSupplements.length > 0) {
+        message += `   ➕ *Suppléments:* ${selectedSupplements.map(s => `${s.name} (+${s.price}DT)`).join(', ')}\n`;
+      }
+
+      if (selectedSauces && selectedSauces.length > 0) {
+        message += `   🍯 *Sauces:* ${selectedSauces.join(', ')}\n`;
+      }
+
+      if (removedIngredients && removedIngredients.length > 0) {
+        message += `   ❌ *Sans:* ${removedIngredients.join(', ')}\n`;
+      }
+
+      if (comment && comment.trim() !== '') {
+        message += `   📝 *Note:* ${comment.trim()}\n`;
+      }
+    });
+
+    message += `\n-------------------------------------------\n`;
+    message += `💰 *TOTAL GENERAL:* *${totalPrice.toFixed(1)} DT*\n`;
+    message += `-------------------------------------------\n`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${RESTAURANT_WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -51,8 +95,8 @@ export default function CartDrawer() {
               <p className="text-gray-400 dark:text-gray-500 font-medium">{t.cartEmpty}</p>
             </div>
           ) : (
-            cartItems.map(({ item, quantity }) => (
-              <div key={item.id} className="flex gap-4 p-4 rounded-2xl bg-[#FAF9F6] dark:bg-[#2C2C2C]">
+            cartItems.map(({ cartItemId, item, quantity, unitPrice, selectedSupplements, selectedSauces, removedIngredients, comment }) => (
+              <div key={cartItemId} className="flex gap-4 p-4 rounded-2xl bg-[#FAF9F6] dark:bg-[#2C2C2C]">
                 {item.images && item.images.length > 0 ? (
                   <img
                     src={item.images[0]}
@@ -70,23 +114,41 @@ export default function CartDrawer() {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-[#2C2C2C] dark:text-white text-sm leading-snug">{item.nameFr}</p>
-                  <p className="text-[#F6B21A] font-black mt-1">{item.price} {t.dt}</p>
+                  
+                  {/* عرض تفاصيل التخصيص */}
+                  <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
+                    {selectedSupplements && selectedSupplements.length > 0 && (
+                      <p><span className="font-semibold text-[#F6B21A]">+ </span>{selectedSupplements.map(s => s.name).join(', ')}</p>
+                    )}
+                    {selectedSauces && selectedSauces.length > 0 && (
+                      <p><span className="font-semibold text-blue-500">Sauces: </span>{selectedSauces.join(', ')}</p>
+                    )}
+                    {removedIngredients && removedIngredients.length > 0 && (
+                      <p><span className="font-semibold text-red-500">Sans: </span>{removedIngredients.join(', ')}</p>
+                    )}
+                    {comment && (
+                      <p className="italic text-gray-400">"{comment}"</p>
+                    )}
+                  </div>
+
+                  <p className="text-[#F6B21A] font-black mt-1">{(unitPrice * quantity).toFixed(1)} {t.dt}</p>
+
                   <div className="flex items-center gap-2 mt-2">
                     <button
-                      onClick={() => updateQuantity(item.id, -1)}
+                      onClick={() => updateQuantity(cartItemId, -1)}
                       className="w-7 h-7 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-[#F6B21A] transition-colors"
                     >
                       <Minus size={12} />
                     </button>
                     <span className="font-black text-sm w-5 text-center">{quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.id, 1)}
+                      onClick={() => updateQuantity(cartItemId, 1)}
                       className="w-7 h-7 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-[#F6B21A] transition-colors"
                     >
                       <Plus size={12} />
                     </button>
                     <button
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => removeFromCart(cartItemId)}
                       className="ml-auto p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-red-400 transition-colors"
                     >
                       <Trash2 size={14} />
@@ -101,15 +163,38 @@ export default function CartDrawer() {
         {/* Footer */}
         {cartItems.length > 0 && (
           <div className="px-6 py-5 border-t border-gray-100 dark:border-gray-800 space-y-4">
+            
+            {/* Option: À emporter */}
+            <button
+              onClick={() => setIsTakeAway(!isTakeAway)}
+              className={`w-full py-2.5 px-4 rounded-xl border flex items-center justify-between transition-all ${
+                isTakeAway
+                  ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20'
+                  : 'bg-gray-50 dark:bg-[#2C2C2C] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+              }`}
+            >
+              <div className="flex items-center gap-2 font-bold text-sm">
+                <ShoppingPack size={18} />
+                <span>À emporter (للأخذ)</span>
+              </div>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-black ${isTakeAway ? 'bg-white text-emerald-600' : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'}`}>
+                {isTakeAway ? '✅ ACTIVÉ' : 'DESACTIVÉ'}
+              </span>
+            </button>
+
+            {/* Total */}
             <div className="flex justify-between items-center">
               <span className="font-semibold text-gray-600 dark:text-gray-400">{t.total}</span>
               <span className="text-2xl font-black text-[#F6B21A]">{totalPrice.toFixed(1)} {t.dt}</span>
             </div>
+
+            {/* WhatsApp Checkout Button */}
             <button
-              onClick={handleCheckout}
-              className="w-full py-4 rounded-2xl bg-[#F6B21A] hover:bg-[#FF9F1C] text-[#2C2C2C] font-black text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#F6B21A]/30"
+              onClick={handleSendToWhatsApp}
+              className="w-full py-4 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#25D366]/30 flex items-center justify-center gap-2"
             >
-              {t.checkout}
+              <Send size={18} />
+              <span>Envoyer sur WhatsApp</span>
             </button>
           </div>
         )}
