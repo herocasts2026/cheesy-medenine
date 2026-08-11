@@ -50,39 +50,44 @@ export default function Order() {
     'Sans Oeuf',
   ];
 
-  // دالة مخصصة بدقة للتحقق من الأطباق التي تقبل خيارات الاستبعاد
+  // دالة الفحص المحسنة لتتوافق مع Supabase وملف البيانات المحلي
   const hasCustomizations = (item?: { nameFr?: string; category?: string }) => {
     if (!item) return true;
-    
-    const lowerCategory = (item.category || '').toLowerCase();
-    const lowerName = (item.nameFr || '').toLowerCase();
 
-    // 1. استثناء طبق Crispy Chicken بالاسم
+    const lowerCategory = (item.category || '').toLowerCase().trim();
+    const lowerName = (item.nameFr || '').toLowerCase().trim();
+
+    // 1. استثناء Crispy Chicken
     if (lowerName.includes('crispy chicken') || lowerName.includes('crispy')) {
       return false;
     }
 
-    // 2. استثناء الأقسام المحددة من العميل
+    // 2. قائمة الأقسام المستثناة بالكامل (شاملة تسميات Supabase والتسميات العادية)
     const excludedCategories = [
       'boissons',
       'boisson',
-      'boissons et eau minérale',
+      'drinks',
+      'beverage',
       'frites et sauces',
+      'frites-sauces',
       'frites',
       'sauces',
       'menu sucré',
+      'menu sucre',
       'sucré',
+      'sucre',
+      'sweets',
       'desserts',
       'dessert',
       'jus',
       'mojito',
     ];
 
-    const isExcludedCategory = excludedCategories.some((cat) =>
-      lowerCategory.includes(cat)
+    const isExcluded = excludedCategories.some(
+      (cat) => lowerCategory === cat || lowerCategory.includes(cat)
     );
 
-    if (isExcludedCategory) {
+    if (isExcluded) {
       return false;
     }
 
@@ -150,12 +155,8 @@ export default function Order() {
 
         msg += `• ${item.nameFr} - ${unitIndex + 1}\n`;
 
-        if (canCustomize) {
-          if (customNotes && customNotes.trim()) {
-            msg += `  └ 📝 ${customNotes}\n`;
-          } else {
-            msg += `  └ 📝 Tout\n`;
-          }
+        if (canCustomize && customNotes && customNotes.trim()) {
+          msg += `  └ 📝 ${customNotes}\n`;
         }
       }
     });
@@ -303,7 +304,6 @@ export default function Order() {
                       </div>
                     </div>
 
-                    {/* إظهار خيارات التخصيص فقط للأصناف القابلة للتخصيص (مثل البرجر، الطاكوس، والسكالوب) */}
                     {canCustomize &&
                       Array.from({ length: quantity }).map((_, unitIndex) => {
                         const noteKey = `${itemIndex}-${unitIndex}`;
@@ -345,13 +345,9 @@ export default function Order() {
                               })}
                             </div>
 
-                            {currentUnitNotes ? (
+                            {currentUnitNotes && (
                               <p className="text-[10px] text-[#F6B21A] mt-2 font-semibold">
                                 📝 {currentUnitNotes}
-                              </p>
-                            ) : (
-                              <p className="text-[10px] text-gray-400 mt-2 font-semibold">
-                                📝 Tout
                               </p>
                             )}
                           </div>
@@ -550,9 +546,9 @@ export default function Order() {
                                 {item.price.toFixed(1)} {t.dt}
                               </span>
                             </div>
-                            {canCustomize && (
+                            {canCustomize && customNotes && customNotes.trim() && (
                               <p className="text-[10px] text-[#F6B21A] pl-3">
-                                └ 📝 {customNotes && customNotes.trim() ? customNotes : 'Tout'}
+                                └ 📝 {customNotes}
                               </p>
                             )}
                           </div>
@@ -572,7 +568,7 @@ export default function Order() {
                 </div>
               </div>
 
-              <div className="p-3 bg-white dark:bg-[#1a1a1a] border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+              <div className="p-3 bg-[#FAF9F6] dark:bg-[#1a1a1a] border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
                 <button
                   onClick={handleConfirmOrder}
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#25D366] hover:bg-[#1ebe57] text-white font-black text-sm transition-all hover:scale-[1.01]"
