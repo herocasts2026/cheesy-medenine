@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Plus, Minus, Trash2, ShoppingBag, ImageIcon, Send, User, Phone, MapPin } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useLang } from '@/contexts/LanguageContext';
+import { supabase } from '@/lib/supabase';
 
 export default function CartDrawer() {
   const {
@@ -25,19 +26,37 @@ export default function CartDrawer() {
   // رقم الواتساب الخاص بالمطعم
   const RESTAURANT_WHATSAPP_NUMBER = '21698157474';
 
-  const handleSendToWhatsApp = () => {
+  const handleSendToWhatsApp = async () => {
     if (cartItems.length === 0) return;
 
+    let orderNum: number;
+
+    try {
+      // استدعاء دالة Supabase الذرية المصممة للترقيم اليومي
+      const { data, error } = await supabase.rpc('get_next_order_number');
+
+      if (error || data === null) {
+        throw error;
+      }
+
+      orderNum = data;
+    } catch {
+      // احتياطي مؤقت في حالة تعثر الاتصال بقاعدة البيانات
+      const now = new Date();
+      orderNum = parseInt(`${now.getHours()}${now.getMinutes()}`, 10);
+    }
+
     let message = `🛒 *Nouvelle Commande - Cheesy Medenine*\n`;
+    message += `🔢 *Commande N°:* #${orderNum}\n`;
     message += `-------------------------------------------\n`;
     message += `📍 *Type de commande:* ${isTakeAway ? '🛍️ *À EMPORTER (للأخذ)*' : '🍽️ *Sur place (في المطعم)*'}\n\n`;
 
-    // إضافة بيانات العميل إذا تم إدخالها
-    if (customerName.trim() || customerPhone.trim() || (isTakeAway && customerAddress.trim())) {
+    // إضافة بيانات العميل
+    if (customerName.trim() || customerPhone.trim() || customerAddress.trim()) {
       message += `👤 *Informations Client (بيانات العميل):*\n`;
       if (customerName.trim()) message += `• *Nom:* ${customerName.trim()}\n`;
       if (customerPhone.trim()) message += `• *Tél:* ${customerPhone.trim()}\n`;
-      if (isTakeAway && customerAddress.trim()) message += `• *Adresse:* ${customerAddress.trim()}\n`;
+      if (customerAddress.trim()) message += `• *Adresse:* ${customerAddress.trim()}\n`;
       message += `-------------------------------------------\n`;
     }
 
@@ -64,8 +83,7 @@ export default function CartDrawer() {
     message += `💰 *TOTAL GENERAL:* *${totalPrice.toFixed(1)} DT*\n`;
     message += `-------------------------------------------`;
 
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${RESTAURANT_WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${RESTAURANT_WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -190,18 +208,16 @@ export default function CartDrawer() {
                     className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#2C2C2C] text-gray-800 dark:text-white focus:outline-none focus:border-[#F6B21A]"
                   />
                 </div>
-                {isTakeAway && (
-                  <div className="relative">
-                    <MapPin size={16} className="absolute left-3 top-3 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Adresse de livraison / العنوان"
-                      value={customerAddress}
-                      onChange={(e) => setCustomerAddress(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#2C2C2C] text-gray-800 dark:text-white focus:outline-none focus:border-[#F6B21A]"
-                    />
-                  </div>
-                )}
+                <div className="relative">
+                  <MapPin size={16} className="absolute left-3 top-3 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Adresse de livraison / العنوان"
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#2C2C2C] text-gray-800 dark:text-white focus:outline-none focus:border-[#F6B21A]"
+                  />
+                </div>
               </div>
             </>
           )}
