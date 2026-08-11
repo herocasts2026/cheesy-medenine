@@ -1,3 +1,8 @@
+export interface Supplement {
+  name: string;
+  price: number;
+}
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -9,6 +14,10 @@ export interface MenuItem {
   descriptionFr: string;
   descriptionAr: string;
   category: string;
+  // خصائص اختيارات التخصيص
+  supplements?: Supplement[];
+  sauces?: string[];
+  removableIngredients?: string[];
 }
 
 export interface MenuCategory {
@@ -27,6 +36,42 @@ export const menuCategories: MenuCategory[] = [
   { id: 'sweets', name: 'Sweet Menu', nameFr: 'Menu Sucré', nameAr: 'القائمة الحلوة', icon: '🍨' },
 ];
 
+export const globalSupplements: Supplement[] = [
+  { name: 'Cheddar', price: 4 },
+  { name: 'Emmental', price: 4 },
+  { name: 'Frites', price: 4 },
+  { name: 'Cheddar burger', price: 6 },
+  { name: 'Sauce aux champignons', price: 10 },
+  { name: 'Oeuf', price: 1.5 },
+  { name: 'Supplément césar', price: 4 },
+  { name: 'Sauce', price: 1.5 },
+  { name: 'Riz', price: 10 },
+];
+
+export const availableSauces: string[] = [
+  'Mayonnaise',
+  'Harissa',
+  'Ketchup',
+  "Sauce à l'ail",
+  'Barbecue',
+  'Algérienne',
+];
+
+export const burgerSansOptions: string[] = [
+  'Sans sauce',
+  'Sans fromage',
+  'Sans salade',
+  'Sans tomate',
+  'Sans oignon',
+  'Sans letus',
+];
+
+export const tacosSansOptions: string[] = [
+  'Sans sauce',
+  'Sans fromage',
+  'Sans oignon',
+];
+
 export const menuItems: MenuItem[] = [
   // --- BURGERS ---
   {
@@ -40,6 +85,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Galette de poulet croustillante avec fromage fondu et salade fraîche.',
     descriptionAr: 'شريحة دجاج مقرمشة مع جبن مذاب وسلطة طازجة.',
     category: 'burgers',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: burgerSansOptions,
   },
   {
     id: 'cheese-burger',
@@ -52,6 +100,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Burger classique avec cheddar, laitue fraîche et sauce.',
     descriptionAr: 'برغر لحم بقري كلاسيكي مع جبنة وخس طازج وصلصة.',
     category: 'burgers',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: burgerSansOptions,
   },
   {
     id: 'double-chicken-burger',
@@ -64,6 +115,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Deux galettes de poulet croustillantes avec fromage et garnitures fraîches.',
     descriptionAr: 'شريحتان من الدجاج المقرمش مع الجبن والإضافات الطازجة.',
     category: 'burgers',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: burgerSansOptions,
   },
   {
     id: 'ranch-burger',
@@ -76,6 +130,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Burger de bœuf juteux avec sauce ranch crémeuse, fromage et laitue croquante.',
     descriptionAr: 'برغر لحم بقري شهي مع صلصة رانش كريمية وجبن وخس مقرمش.',
     category: 'burgers',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: burgerSansOptions,
   },
   {
     id: 'double-cheese-burger',
@@ -88,6 +145,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Double galettes de bœuf garnies de cheddar fondu.',
     descriptionAr: 'شريحتان من لحم البقر محشوة بجبن الشيدر الغني.',
     category: 'burgers',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: burgerSansOptions,
   },
   {
     id: 'kids-burger',
@@ -100,6 +160,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Burger enfant servi avec frites, jus et un jouet surprise.',
     descriptionAr: 'برغر للأطفال يُقدم مع البطاطس والعصير ولعبة ممتعة.',
     category: 'burgers',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: burgerSansOptions,
   },
 
   // --- TACOS ---
@@ -114,6 +177,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: "Tacos français garni d'escalope grillé, frites et sauce crémeuse au fromage.",
     descriptionAr: 'تاكوس فرنسي محشو بإسكالوب مشوي والبطاطس وصلصة الجبن الكريمية.',
     category: 'tacos',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: tacosSansOptions,
   },
   {
     id: 'poulet-thai-tacos',
@@ -126,6 +192,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Tacos français au poulet façon thaï, frites et sauce signature.',
     descriptionAr: 'تاكوس فرنسي بدجاج على الطريقة التايلاندية مع البطاطس وصلصة مميزة.',
     category: 'tacos',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: tacosSansOptions,
   },
   {
     id: 'cordon-bleu-tacos',
@@ -138,6 +207,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Tacos français garni de cordon bleu, frites et sauce fromagère.',
     descriptionAr: 'تاكوس فرنسي محشو بدجاج كوردون بلو والبطاطس وصلصة الجبن.',
     category: 'tacos',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: tacosSansOptions,
   },
   {
     id: 'escalope-panee-tacos',
@@ -150,6 +222,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: "Tacos français garni d'escalope panée, frites et sauce crémeuse.",
     descriptionAr: 'تاكوس فرنسي محشو بإسكالوب مقرمش والبطاطس وصلصة كريمية.',
     category: 'tacos',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: tacosSansOptions,
   },
   {
     id: 'viande-hachee-tacos',
@@ -162,6 +237,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Tacos français garni de viande hachée, frites et sauce fromagère fondue.',
     descriptionAr: 'تاكوس فرنسي محشو باللحم المفروم والبطاطس وصلصة الجبن المذاب.',
     category: 'tacos',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: tacosSansOptions,
   },
   {
     id: 'tacos-geant',
@@ -174,6 +252,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Tacos roulé extra large avec garnitures généreuses de poulet et fromage.',
     descriptionAr: 'تاكوس ملفوف كبير الحجم مع حشوة سخية من الدجاج والجبن.',
     category: 'tacos',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: tacosSansOptions,
   },
   {
     id: 'tacos-geant-viande-hachee',
@@ -186,6 +267,9 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Tacos roulé géant garni de viande hachée, frites et fromage.',
     descriptionAr: 'تاكوس ملفوف عملاق محشو باللحم المفروم والبطاطس والجبن.',
     category: 'tacos',
+    supplements: globalSupplements,
+    sauces: availableSauces,
+    removableIngredients: tacosSansOptions,
   },
 
   // --- PLATS ---
@@ -200,6 +284,8 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Salade César fraîche avec lamelles de poulet grillé, croûtons et sauce.',
     descriptionAr: 'سلطة سيزر طازجة مع شرائح دجاج مشوي وخبز محمص وصلصة.',
     category: 'plats',
+    supplements: globalSupplements,
+    sauces: availableSauces,
   },
   {
     id: 'plat-escalope',
@@ -212,6 +298,8 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Escalope de poulet servi avec riz, frites et salade fraîche.',
     descriptionAr: 'إسكالوب دجاج يُقدم مع الأرز والبطاطس والسلطة الطازجة.',
     category: 'plats',
+    supplements: globalSupplements,
+    sauces: availableSauces,
   },
   {
     id: 'crispy-chicken',
@@ -224,6 +312,8 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Tenders de poulet frits dorés servis avec frites et sauces.',
     descriptionAr: 'قطع دجاج مقرمشة ذهبية تُقدم مع البطاطس والصلصات.',
     category: 'plats',
+    supplements: globalSupplements,
+    sauces: availableSauces,
   },
   {
     id: 'plat-escalope-creme',
@@ -236,6 +326,8 @@ export const menuItems: MenuItem[] = [
     descriptionFr: 'Escalope de poulet tendre dans une riche sauce crémeuse aux champignons avec riz.',
     descriptionAr: 'إسكالوب دجاج طري في صلصة كريمية غنية بالفطر مع الأرز.',
     category: 'plats',
+    supplements: globalSupplements,
+    sauces: availableSauces,
   },
   {
     id: 'plat-kebab',
@@ -245,9 +337,11 @@ export const menuItems: MenuItem[] = [
     price: 34,
     images: ['/images/plats/plat_kabeb.jpg.jpeg'],
     description: 'Skewered grilled meat served with rice, fries, garlic sauce, and salad.',
-    descriptionFr: 'Viande grillée en brochettes servie avec riz, frites, sauce à l\'ail et salade.',
+    descriptionFr: "Viande grillée en brochettes servie avec riz, frites, sauce à l'ail et salade.",
     descriptionAr: 'لحم مشوي على الأسياخ يُقدم مع الأرز والبطاطس وصلصة الثوم والسلطة.',
     category: 'plats',
+    supplements: globalSupplements,
+    sauces: availableSauces,
   },
 
   // --- BOISSONS ---
@@ -271,7 +365,7 @@ export const menuItems: MenuItem[] = [
     price: 8,
     images: ['/images/boissons/boisson.jpg.jpeg'],
     description: 'Fresh natural pineapple juice.',
-    descriptionFr: 'Jus naturel frais d\'ananas.',
+    descriptionFr: "Jus naturel frais d'ananas.",
     descriptionAr: 'عصير أناناس طبيعي وطازج.',
     category: 'boissons',
   },
@@ -331,7 +425,7 @@ export const menuItems: MenuItem[] = [
     price: 1.5,
     images: ['/images/boissons/eau_minerale.jpg.jpeg'],
     description: 'Refreshing natural mineral water bottle.',
-    descriptionFr: 'Bouteille d\'eau minérale naturelle rafraîchissante.',
+    descriptionFr: "Bouteille d'eau minérale naturelle rafraîchissante.",
     descriptionAr: 'زجاجة ماء معدني طبيعي منعش.',
     category: 'boissons',
   },
@@ -445,40 +539,4 @@ export const menuItems: MenuItem[] = [
     descriptionAr: 'ميني بانكيك طري طازج مغطى بنوتيلا الغنية بالشوكولاتة.',
     category: 'sweets',
   },
-];
-
-export const globalSupplements = [
-  { name: 'Cheddar', price: 4 },
-  { name: 'Emmental', price: 4 },
-  { name: 'Frites', price: 4 },
-  { name: 'Cheddar burger', price: 6 },
-  { name: 'Sauce aux champignons', price: 10 },
-  { name: 'Oeuf', price: 1.5 },
-  { name: 'Supplément césar', price: 4 },
-  { name: 'Sauce', price: 1.5 },
-  { name: 'Riz', price: 10 },
-];
-
-export const availableSauces = [
-  'Mayonnaise',
-  'Harissa',
-  'Ketchup',
-  'Sauce à l\'ail',
-  'Barbecue',
-  'Algérienne',
-];
-
-export const burgerSansOptions = [
-  'Sans sauce',
-  'Sans fromage',
-  'Sans salade',
-  'Sans tomate',
-  'Sans oignon',
-  'Sans letus',
-];
-
-export const tacosSansOptions = [
-  'Sans sauce',
-  'Sans fromage',
-  'Sans oignon',
 ];
