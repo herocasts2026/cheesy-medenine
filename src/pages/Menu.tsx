@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Plus, Check, Loader2 } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
+import { ShoppingBag, Search, Plus, Check, Loader2, X, MessageSquare, Utensils } from 'lucide-react';
+import { useCart, SelectedSupplement } from '@/contexts/CartContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 import { MenuItem, menuItems, menuCategories } from '@/data/menuData';
@@ -15,6 +15,13 @@ export default function Menu() {
   const [loading, setLoading] = useState(true);
   const [addedItemId, setAddedItemId] = useState<string | null>(null);
 
+  // حالة النافذة المنبثقة (Modal) والتخصيص
+  const [selectedItemForModal, setSelectedItemForModal] = useState<MenuItem | null>(null);
+  const [selectedSupplements, setSelectedSupplements] = useState<SelectedSupplement[]>([]);
+  const [selectedSauces, setSelectedSauces] = useState<string[]>([]);
+  const [removedIngredients, setRemovedIngredients] = useState<string[]>([]);
+  const [customComment, setCustomComment] = useState('');
+
   useEffect(() => {
     fetchMenuItems();
   }, []);
@@ -22,25 +29,85 @@ export default function Menu() {
   const fetchMenuItems = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('menu_items')
-        .select('*');
+      const { data, error } = await supabase.from('menu_items').select('*');
 
       if (error) {
         console.error('Error fetching menu items from Supabase, falling back to local data:', error);
-        setItems(menuItems); // استخدام البيانات المحلية عند وجود خطأ
+        setItems(menuItems);
       } else if (data && data.length > 0) {
         setItems(data as MenuItem[]);
       } else {
-        // إذا كان الجدول في Supabase فارغاً
         setItems(menuItems);
       }
     } catch (err) {
       console.error('Unexpected error, using local menuItems fallback:', err);
-      setItems(menuItems); // استخدام البيانات المحلية في حالة حدوث أي استثناء
+      setItems(menuItems);
     } finally {
       setLoading(false);
     }
+  };
+
+  // فتح نافذة التخصيص عند الضغط على الوجبة
+  const openCustomizationModal = (item: MenuItem) => {
+    setSelectedItemForModal(item);
+    setSelectedSupplements([]);
+    setSelectedSauces([]);
+    setRemovedIngredients([]);
+    setCustomComment('');
+  };
+
+  const closeModal = () => {
+    setSelectedItemForModal(null);
+  };
+
+  // تبديل اختيار الإضافات المدفوعة
+  const toggleSupplement = (supp: { name: string; price: number }) => {
+    setSelectedSupplements(prev =>
+      prev.some(s => s.name === supp.name)
+        ? prev.filter(s => s.name !== supp.name)
+        : [...prev, supp]
+    );
+  };
+
+  // تبديل اختيار الصلصات
+  const toggleSauce = (sauce: string) => {
+    setSelectedSauces(prev =>
+      prev.includes(sauce) ? prev.filter(s => s !== sauce) : [...prev, sauce]
+    );
+  };
+
+  // تبديل حذف المكونات (Sans)
+  const toggleRemoveIngredient = (ing: string) => {
+    setRemovedIngredients(prev =>
+      prev.includes(ing) ? prev.filter(i => i !== ing) : [...prev, ing]
+    );
+  };
+
+  // الإضافة للسلة بعد التخصيص
+  const handleConfirmAddToCart = () => {
+    if (!selectedItemForModal) return;
+
+    addToCart(
+      selectedItemForModal,
+      selectedSupplements,
+      selectedSauces,
+      removedIngredients,
+      customComment
+    );
+
+    setAddedItemId(selectedItemForModal.id);
+    closeModal();
+
+    setTimeout(() => {
+      setAddedItemId(null);
+    }, 1200);
+  };
+
+  // حساب السعر النهائي داخل النافذة المنبثقة
+  const calculateModalTotalPrice = () => {
+    if (!selectedItemForModal) return 0;
+    const suppsTotal = selectedSupplements.reduce((sum, s) => sum + s.price, 0);
+    return selectedItemForModal.price + suppsTotal;
   };
 
   // تصفية الأصناف بحسب التصنيف والبحث
@@ -65,14 +132,6 @@ export default function Menu() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleAddToCart = (item: MenuItem) => {
-    addToCart(item);
-    setAddedItemId(item.id);
-    setTimeout(() => {
-      setAddedItemId(null);
-    }, 1200);
-  };
-
   const getItemCartQuantity = (id: string) => {
     const cartItem = cartItems.find((ci) => ci.item.id === id);
     return cartItem ? cartItem.quantity : 0;
@@ -81,6 +140,7 @@ export default function Menu() {
   return (
     <div className="min-h-screen bg-[#FAF9F6] dark:bg-[#121212] py-8 px-4 sm:px-6 lg:px-8 transition-colors">
       <div className="max-w-7xl mx-auto space-y-8">
+        
         {/* العنوان والبحث */}
         <div className="text-center space-y-4 max-w-2xl mx-auto">
           <h1 className="text-4xl font-black text-[#2C2C2C] dark:text-white">
@@ -97,9 +157,7 @@ export default function Menu() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={
-                isRTL ? 'بحث عن وجبة...' : 'Rechercher un plat...'
-              }
+              placeholder={isRTL ? 'بحث عن وجبة...' : 'Rechercher un plat...'}
               className="w-full px-5 py-3.5 pl-12 rounded-2xl bg-white dark:bg-[#2C2C2C] border border-gray-200 dark:border-gray-800 text-[#2C2C2C] dark:text-white shadow-sm focus:outline-none focus:border-[#F6B21A] transition-colors"
             />
             <Search
@@ -176,7 +234,8 @@ export default function Menu() {
               return (
                 <div
                   key={item.id}
-                  className="bg-white dark:bg-[#2C2C2C] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between border border-gray-100 dark:border-gray-800/80 group"
+                  onClick={() => openCustomizationModal(item)}
+                  className="bg-white dark:bg-[#2C2C2C] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between border border-gray-100 dark:border-gray-800/80 group cursor-pointer"
                 >
                   <div className="p-4 space-y-3">
                     {/* الصورة */}
@@ -223,7 +282,10 @@ export default function Menu() {
                     </div>
 
                     <button
-                      onClick={() => handleAddToCart(item)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openCustomizationModal(item);
+                      }}
                       className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all ${
                         isJustAdded
                           ? 'bg-[#25D366] text-white scale-95'
@@ -238,7 +300,7 @@ export default function Menu() {
                       ) : (
                         <>
                           <Plus size={14} />
-                          <span>{isRTL ? 'إضافة' : 'Ajouter'}</span>
+                          <span>{isRTL ? 'تخصيص' : 'Personnaliser'}</span>
                         </>
                       )}
                     </button>
@@ -248,6 +310,161 @@ export default function Menu() {
             })}
           </div>
         )}
+
+        {/* ------------------ MODAL (نافذة تخصيص الوجبة) ------------------ */}
+        {selectedItemForModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div
+              className="bg-white dark:bg-[#1A1A1A] w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-all border border-gray-100 dark:border-gray-800"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header النافذة */}
+              <div className="relative p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Utensils size={20} className="text-[#F6B21A]" />
+                  <h3 className="text-xl font-black text-[#2C2C2C] dark:text-white">
+                    {lang === 'ar'
+                      ? selectedItemForModal.nameAr || selectedItemForModal.nameFr || selectedItemForModal.name
+                      : selectedItemForModal.nameFr || selectedItemForModal.name}
+                  </h3>
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* محتوى الخيارات (Scrollable) */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                
+                {/* 1. Suppléments الإضافات */}
+                {selectedItemForModal.supplements && selectedItemForModal.supplements.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-extrabold text-sm text-[#2C2C2C] dark:text-white flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#F6B21A]"></span>
+                      {isRTL ? 'الإضافات (Suppléments)' : 'Suppléments (إضافات)'}
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {selectedItemForModal.supplements.map((supp, idx) => {
+                        const isSelected = selectedSupplements.some(s => s.name === supp.name);
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => toggleSupplement(supp)}
+                            className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-between transition-all ${
+                              isSelected
+                                ? 'border-[#F6B21A] bg-[#F6B21A]/10 text-[#2C2C2C] dark:text-white'
+                                : 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                            }`}
+                          >
+                            <span>{supp.name}</span>
+                            <span className="text-[#F6B21A] font-black">+{supp.price} DT</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Sauces الصلصات */}
+                {selectedItemForModal.sauces && selectedItemForModal.sauces.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-extrabold text-sm text-[#2C2C2C] dark:text-white flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                      {isRTL ? 'اختر الصلصات (Sauces)' : 'Sauces au choix'}
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedItemForModal.sauces.map((sauce, idx) => {
+                        const isSelected = selectedSauces.includes(sauce);
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => toggleSauce(sauce)}
+                            className={`px-4 py-2 rounded-xl border text-xs font-bold transition-all ${
+                              isSelected
+                                ? 'border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                : 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400'
+                            }`}
+                          >
+                            {sauce}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Sans بدون */}
+                {selectedItemForModal.removableIngredients && selectedItemForModal.removableIngredients.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-extrabold text-sm text-[#2C2C2C] dark:text-white flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                      {isRTL ? 'بدون (Sans)' : 'Sans (إزالة مكونات)'}
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedItemForModal.removableIngredients.map((ing, idx) => {
+                        const isSelected = removedIngredients.includes(ing);
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => toggleRemoveIngredient(ing)}
+                            className={`px-4 py-2 rounded-xl border text-xs font-bold transition-all ${
+                              isSelected
+                                ? 'border-red-500 bg-red-500/10 text-red-600 dark:text-red-400 line-through'
+                                : 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400'
+                            }`}
+                          >
+                            Sans {ing}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Note / Commentaire ملاحظات */}
+                <div className="space-y-2">
+                  <h4 className="font-extrabold text-sm text-[#2C2C2C] dark:text-white flex items-center gap-2">
+                    <MessageSquare size={14} className="text-gray-400" />
+                    {isRTL ? 'ملاحظة خاصة (Note)' : 'Remarque spéciale'}
+                  </h4>
+                  <textarea
+                    rows={2}
+                    value={customComment}
+                    onChange={(e) => setCustomComment(e.target.value)}
+                    placeholder={isRTL ? 'أي ملاحظة للمطبخ...' : 'Ex: Extra cuit, pas trop piquant...'}
+                    className="w-full p-3 text-xs rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#252525] text-[#2C2C2C] dark:text-white focus:outline-none focus:border-[#F6B21A]"
+                  />
+                </div>
+              </div>
+
+              {/* Footer النافذة السفلية - السعر الإجمالي وزر الإضافة */}
+              <div className="p-5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4 bg-gray-50/50 dark:bg-[#1f1f1f]">
+                <div>
+                  <span className="text-xs text-gray-400 block font-bold">{isRTL ? 'السعر الإجمالي:' : 'Prix Total:'}</span>
+                  <span className="text-2xl font-black text-[#F6B21A]">
+                    {calculateModalTotalPrice().toFixed(1)} <span className="text-xs font-bold text-gray-400">DT</span>
+                  </span>
+                </div>
+
+                <button
+                  onClick={handleConfirmAddToCart}
+                  className="px-6 py-3.5 rounded-2xl bg-[#F6B21A] hover:bg-[#e0a012] text-[#2C2C2C] font-black text-sm transition-all shadow-md active:scale-95 flex items-center gap-2"
+                >
+                  <Plus size={16} />
+                  <span>{isRTL ? 'إضافة للسلة' : 'Ajouter au Panier'}</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
