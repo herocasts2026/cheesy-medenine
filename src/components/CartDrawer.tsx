@@ -17,7 +17,7 @@ export default function CartDrawer() {
   const { t, isRTL } = useLang();
 
   // رقم الواتساب الخاص بالمطعم (ضع رقم الهاتف التونسي هنا بدون رمز +)
-  const RESTAURANT_WHATSAPP_NUMBER = '21600000000'; 
+  const RESTAURANT_WHATSAPP_NUMBER = '21698157474'; 
 
   const handleSendToWhatsApp = () => {
     if (cartItems.length === 0) return;
