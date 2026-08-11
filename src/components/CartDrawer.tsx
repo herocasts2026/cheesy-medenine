@@ -174,7 +174,7 @@ export default function CartDrawer() {
               }`}
             >
               <div className="flex items-center gap-2 font-bold text-sm">
-                <ShoppingPack size={18} />
+                <ShoppingBag size={18} />
                 <span>À emporter (للأخذ)</span>
               </div>
               <span className={`text-xs px-2 py-0.5 rounded-full font-black ${isTakeAway ? 'bg-white text-emerald-600' : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'}`}>
