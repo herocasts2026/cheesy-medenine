@@ -33,7 +33,6 @@ export default function Order() {
   const [address, setAddress] = useState('');
   const [generalNotes, setGeneralNotes] = useState('');
 
-  // خريطة لربط استبعادات كل وحدة على حدة باستخدام المفتاح `${itemIndex}-${unitIndex}`
   const [itemNotesMap, setItemNotesMap] = useState<Record<string, string>>({});
 
   const [showConfirm, setShowConfirm] = useState(false);
@@ -51,7 +50,7 @@ export default function Order() {
     'Sans Oeuf',
   ];
 
-  // دالة للتحقق مما إذا كان المنتج ينتمي للمشروبات، الحلويات، المقليات، أو الصلصات
+  // دالة للتحقق مما إذا كان المنتج مستثنى من خيارات الاستبعاد والتخصيص
   const isExcludedFromCustomization = (item: any) => {
     const category = item?.category?.toLowerCase() || '';
     const categoryId = item?.category_id?.toLowerCase() || '';
@@ -84,6 +83,8 @@ export default function Order() {
       'algerienne',
       'barbecue',
       'ail',
+      // 3. أطباق مستثناة بالتحديد مثل كريسبي تشيكن
+      'crispy',
     ];
 
     return excludedKeywords.some(
@@ -136,7 +137,6 @@ export default function Order() {
     }
   };
 
-  // بناء نص رسالة الواتساب بنفس تنسيق العرض
   const buildWhatsAppMessage = (orderNum: string) => {
     const now = new Date();
     const date = `${String(now.getDate()).padStart(2, '0')}/${String(
@@ -309,7 +309,7 @@ export default function Order() {
                       </div>
                     </div>
 
-                    {/* عرض خيارات التخصيص فقط للأطباق التي تستوجب ذلك */}
+                    {/* عرض أزرار التخصيص والاستبعاد فقط للأطباق غير المستثناة */}
                     {!isExcluded &&
                       Array.from({ length: quantity }).map((_, unitIndex) => {
                         const noteKey = `${itemIndex}-${unitIndex}`;
