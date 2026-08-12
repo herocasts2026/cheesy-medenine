@@ -5,7 +5,7 @@ import { useLang } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 
 interface SavedOrderSnapshot {
-  orderNum: number;
+  orderNum: string;
   items: CartItem[];
   total: number;
   customerName: string;
@@ -99,9 +99,9 @@ export default function CartDrawer() {
         throw error || new Error('فشل الاتصال بقاعدة البيانات');
       }
 
-      // حفظ نسخة ثابته (Snapshot) من الطلب
+      // حفظ نسخة ثابته (Snapshot) من الطلب مع الاحتفاظ بـ orderNum كـ string
       setSavedOrder({
-        orderNum: Number(orderNum),
+        orderNum: String(orderNum),
         items: [...cartItems],
         total: totalPrice,
         customerName: customerName.trim(),
@@ -400,7 +400,7 @@ export default function CartDrawer() {
           )}
         </div>
 
-        {/* Footer: ينشط إذا كانت السلة تحتوي منتجات أو إذا كنا في الخطوة الأخيرة (مع وجود الطلب المحفوظ) */}
+        {/* Footer */}
         {(cartItems.length > 0 || (step === 3 && savedOrder)) && (
           <div className="px-6 py-5 border-t border-gray-100 dark:border-gray-800 space-y-3">
             {step === 1 && (
